@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" href="https://yt3.ggpht.com/ZadXLk5_2pRH-NJ03MrQjapJ5F0L1KwV16D0lp3n1hyBHDCet7DGzH471qL5ml8gmMJ9yFWgkQ=s176-c-k-c0x00ffffff-no-rj"">
+</head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detailed Character & Model Prompt Generator</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+  }
+  .container {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 25px;
+    max-width: 1300px;
+    width: 100%;
+    display: flex;
+    gap: 30px;
+  }
+  h2 {
+    color: #1e3a8a;
+    text-align: center;
+    margin-bottom: 25px;
+    font-weight: 600;
+  }
+
+  .sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    padding-right: 20px;
+    border-right: 1px solid #e5e7eb;
+  }
+  .sidebar button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    background: #f9fafb;
+    color: #374151;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .sidebar button:hover {
+    background: #e5e7eb;
+  }
+  .sidebar button.active {
+    background: #3b82f6;
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3);
+  }
+  .sidebar button.active i {
+    color: #ffffff;
+  }
+  .sidebar button i {
+    color: #9ca3af;
+  }
+
+  .content {
+    flex: 1;
+  }
+  .category-section {
+    margin-bottom: 25px;
+  }
+  .category-section h3 {
+    color: #1f2937;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    border-left: 4px solid #3b82f6;
+    padding-left: 10px;
+    font-weight: 600;
+  }
+
+  .feature-row {
+    display: grid;
+    /* Default grid columns, adjusted dynamically by JS for color pickers */
+    grid-template-columns: 150px 1fr auto; 
+    gap: 15px;
+    align-items: center;
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    transition: all 0.2s;
+  }
+  .feature-row:hover {
+      background: #f9f9f9;
+  }
+  label {
+    font-weight: 500;
+    color: #1f2937;
+  }
+  select {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background-color: #f9fafb;
+    color: #1f2937;
+    font-size: 1em;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  select:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+  .feature-controls {
+      display: flex;
+      gap: 15px;
+  }
+  .feature-controls input[type="checkbox"] {
+    accent-color: #3b82f6;
+    cursor: pointer;
+    transform: scale(1.1);
+  }
+  .feature-controls label {
+      font-size: 0.9em;
+      color: #6b7280;
+      cursor: pointer;
+  }
+
+  /* --- Color Picker Styling --- */
+  .color-picker-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+  }
+  .color-picker {
+    width: 40px; 
+    height: 40px; 
+    padding: 0;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    background: transparent;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    overflow: hidden; 
+    flex-shrink: 0;
+  }
+
+  .color-picker::-webkit-color-swatch-wrapper {
+      padding: 0;
+  }
+
+  .color-picker::-webkit-color-swatch {
+      border: none;
+  }
+  .color-picker::-moz-color-swatch {
+      border: none;
+  }
+  /* --- End Color Picker Styling --- */
+
+  .feature-row.locked {
+      background-color: #fffbeb;
+      border-left: 4px solid #f59e0b;
+  }
+  .feature-row.ignored {
+      opacity: 0.5;
+      border-left: 4px solid #ef4444;
+  }
+  .feature-row.locked .feature-controls input[type="checkbox"] {
+      accent-color: #f59e0b;
+  }
+
+  .category-actions, .prompt-actions, .global-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+  }
+  .category-actions {
+      border: 1px dashed #d1d5db;
+      background: #f3f4f6;
+  }
+  .global-actions {
+      border: 2px solid #3b82f6;
+      background: #eff6ff;
+  }
+  .global-actions h4 {
+      width: 100%;
+      margin: 0 0 10px 0;
+      color: #1e3a8a;
+  }
+
+  .btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.9em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+  }
+  .btn:hover {
+      transform: translateY(-1px);
+  }
+  .btn i {
+    margin-right: 8px;
+  }
+  
+  .btn-primary {
+    background-color: #10b981;
+    color: #ffffff;
+  }
+  .btn-primary:hover {
+    background-color: #059669;
+  }
+
+  .btn-secondary {
+    background-color: #6b7280;
+    color: #ffffff;
+  }
+  .btn-secondary:hover {
+    background-color: #4b5563;
+  }
+
+  .btn-control {
+    background-color: #d1d5db;
+    color: #1f2937;
+  }
+  .btn-control:hover {
+    background-color: #9ca3af;
+  }
+  .global-actions .btn-control {
+      background-color: #3b82f6;
+      color: #ffffff;
+  }
+  .global-actions .btn-control:hover {
+      background-color: #2563eb;
+  }
+
+  #prompt-container {
+    margin-top: 20px;
+    border-radius: 8px;
+    background: #fff;
+    border: 2px solid #3b82f6;
+  }
+  #prompt {
+    padding: 15px 15px 5px 15px;
+    color: #1f2937;
+    min-height: 80px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: monospace;
+    font-size: 1.1em;
+  }
+  #char-counter {
+      text-align: right;
+      padding: 0 15px 10px 15px;
+      font-size: 0.85em;
+      color: #6b7280;
+      font-weight: 500;
+  }
+
+  .drop-zone {
+    border: 2px dashed #93c5fd;
+    padding: 20px;
+    text-align: center;
+    margin-top: 15px;
+    border-radius: 8px;
+    color: #3b82f6;
+    background: #f0f8ff;
+    cursor: pointer;
+  }
+  .drop-zone.dragover {
+    border-color: #1d4ed8;
+    background: #e0f2fe;
+  }
+  
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #333;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+  }
+  .toast.show {
+    opacity: 1;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="sidebar" id="categoryMenu"></div>
+  
+	<div class="content">
+		<h2>Detailed Character & Model Prompt Generator</h2>
+		
+		<div id="features"></div>
+		
+		<div style="text-align: center; margin-bottom: 10px;">
+			<a href="https://www.youtube.com/channel/UCFF_BjgfHeedB8CVMC-TCrA" target="_blank" title="Go to YouTube Channel">
+				<img src="https://yt3.ggpht.com/ZadXLk5_2pRH-NJ03MrQjapJ5F0L1KwV16D0lp3n1hyBHDCet7DGzH471qL5ml8gmMJ9yFWgkQ=s176-c-k-c0x00ffffff-no-rj" alt="YouTube Channel Profile Picture" style="width: 80px; height: 80px; border-radius: 50%; border: 3px solid #3b82f6; display: block; margin: 0 auto;">
+			</a>
+		</div>
+		
+		<div style="text-align: center; margin-bottom: 25px; font-size: 0.9em; color: #6b7280;">
+			Creator of the program & Channel. Learn more:
+			<a href="https://www.youtube.com/playlist?list=PLb4IcXFEUkZQ1U1FCbYskEyzVPs1MWkDz" target="_blank" style="color: #1e3a8a; font-weight: 600; text-decoration: none; margin-left: 5px;">Consistent Characters with AI Playlist</a>
+		</div>		
+		
+		</div>
+	</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/**
+ * @fileoverview Detailed Character & Model Prompt Generator
+ * * This application is a web-based tool designed to facilitate the creation of complex,
+ * structured text prompts for AI image generation models (e.g., Stable Diffusion, Midjourney).
+ * * It allows users to select detailed visual attributes across multiple categories 
+ * (such as Face, Body, Hair, Clothing, Environment, and Lighting) from a predefined 
+ * data structure, 'commonFeatures'.
+ * * The core functionalities include:
+ * 1. Dynamic UI generation: Creating category menus and feature selectors based on the data.
+ * 2. Real-time Prompt Aggregation: Collecting user selections to construct a comprehensive
+ * and weighted text prompt for the AI model.
+ * 3. Color Management: Utility functions to handle and convert color inputs.
+ * 4. Configuration Persistence: Functionality for saving and loading custom prompts via JSON files.
+ * * @author 3D Logic Class 
+ * @version 1.0.0
+ * @since 2025-10-29
+ */
+
+/*
+ * The MIT License (MIT)
+ * * Copyright (c) 2025 3D Logic Class
+ * * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+
+/**
+ * @fileoverview Utility functions for feature sorting, color validation, and default color mapping 
+ * within the Prompt Generator application.
+ */
+
+// --- Feature Sorting and Ordering ---
+
+/**
+ * @constant {string[]} specialSortFeatures 
+ * List of feature names that require a specific, non-alphabetical sort order. 
+ * This is crucial for maintaining a logical flow in the UI (e.g., Age/Height should appear 
+ * in a predefined list order, not sorted alphabetically like "Medium" then "Small" then "Large").
+ */
+const specialSortFeatures = [
+    "Age", "Height", "Hair Length", "Hair Volume", "Lip Size", "Eye Size", "Image Type"
+];
+
+/**
+ * Sorts the options array for a given feature.
+ * Features listed in `specialSortFeatures` retain their original definition order.
+ * All other features are sorted alphabetically for consistency.
+ * * @param {string} featureName - The name of the feature (e.g., "Hair Style").
+ * @param {string[]} options - The array of possible values for the feature.
+ * @returns {string[]} The sorted or original array of options.
+ */
+function sortOptions(featureName, options) {
+    // Check if the feature requires special, pre-defined ordering.
+    if (specialSortFeatures.includes(featureName)) {
+        return options;
+    }
+    // For all other features, return a new array sorted alphabetically (case-sensitive by default).
+    return [...options].sort((a, b) => a.localeCompare(b));
+}
+
+
+// --- Color Utility Functions ---
+
+/**
+ * Validates if a string is a valid hexadecimal color code (e.g., #RRGGBB or #RGB).
+ * This is used to distinguish between a stored color name (like "Red") and a custom
+ * color hex code when loading or processing feature values.
+ * * @param {string} str - The string to test.
+ * @returns {boolean} True if the string matches the hex color pattern, false otherwise.
+ */
+function isHexColor(str) {
+    // Regex matches strings starting with '#' followed by 3 or 6 hex characters (0-9, A-F).
+    return /^#([0-9A-F]{3}){1,2}$/i.test(str);
+}
+
+/**
+ * Provides a basic, representative hex code for a given color name.
+ * This is primarily used to set the visual color of the `<input type="color">` picker 
+ * when the user selects a non-custom color *name* from the dropdown list.
+ * * NOTE: This is a basic implementation and maps only a few common colors. It attempts
+ * to extract the first word of multi-word names (e.g., 'Light Blue' -> 'Light' -> 'White' (Default))
+ * for a fallback mechanism.
+ * * @param {string} colorName - The name of the color (e.g., "Deep Red", "Light Blonde").
+ * @returns {string} The corresponding base hex color code. Defaults to '#ffffff' if no match is found.
+ */
+function getBaseHex(colorName) {
+    /** @type {Object.<string, string>} A map of base color names to their corresponding hex values. */
+    const defaultColors = {
+        'Black': '#000000', 'White': '#ffffff', 'Red': '#ff0000', 'Blue': '#0000ff',
+        'Green': '#008000', 'Brown': '#a52a2a', 'Yellow': '#ffff00', 'Pink': '#ffc0cb',
+        'Gray': '#808080', 'Default': '#ffffff' // Default white/visible
+    };
+    
+    // Extract the first word of the color name and capitalize it to match keys in defaultColors.
+    // E.g., 'Light Blue' becomes 'Light', 'Dark Blonde' becomes 'Dark'.
+    // This is a crude heuristic to try and find a sensible default.
+    const baseColor = colorName.split(' ')[0].replace(/[^a-zA-Z]/g, '');
+    
+    // Return the specific base color or the 'Default' hex code if not found.
+    return defaultColors[baseColor] || defaultColors.Default;
+}
+
+/**
+ * @fileoverview Configuration object defining the complete set of features and their
+ * available options used for generating detailed character or model prompts.
+ * * The structure is: Category -> Feature Name -> Array of Options.
+ * This organization facilitates dynamic UI generation and structured prompt creation.
+ */
+const commonFeatures = {
+	
+	// --- FACE CATEGORY ---
+	/**
+	 * Features related to the overall structure and components of the head and upper body, 
+	 * excluding specific eye/nose/lip details.
+	 */
+	Face: {
+	  	// Defines the various anatomical shapes of the face.
+	  	"Face Shape": ["Oval","Round","Square","Heart-shaped","Diamond-shaped","Rectangular","Triangular","Long","Short","Pear-shaped","Oblong","Angular","Soft"],
+	  	// Describes the characteristics of the forehead area.
+	  	"Forehead": ["High","Low","Wide","Narrow","Average","Sloped","Flat","Rounded"],
+	  	// Features describing the prominence and shape of the cheekbones.
+	  	"Cheekbones": ["High","Prominent","Soft","Flat","Average","Angular","Wide","Narrow","Rosy"],
+	  	// Options for describing ear size and how they are positioned relative to the head.
+	  	"Ears": ["Small","Average","Protruding","Close to head","Rounded","Pointed","Attached lobes","Detached lobes"],
+	  	// Options for the appearance and length of the neck.
+	  	"Neck": ["Long","Short","Slim","Thick","Average","Muscular","Graceful","Sturdy"],
+	  	// Characteristics defining the jawline's angle and width.
+	  	"Jawline": ["Sharp","Soft","Angular","Rounded","Wide","Narrow"],
+	  	// Different shapes and defining characteristics of the chin.
+	  	"Chin": ["Pointed","Rounded","Square","Cleft","Receded"],
+	  	// Specifies the presence and depth of wrinkles for character aging/detail.
+      	"Wrinkles": ["None","Light","Moderate","Deep","Crow's feet","Smile lines"]
+	},
+
+	// --- EYES CATEGORY ---
+	/**
+	 * Detailed features focusing specifically on the eyes and surrounding orbital area.
+	 */
+	Eyes: {
+	  	// The outline or form of the eye (e.g., genetic or structural appearance).
+	  	"Eye Shape": ["Almond-shaped", "Round", "Deep-set", "Hooded", "Monolid", "Upturned", "Downturned", "Wide-set", "Close-set", "Protruding"],
+	  	// Standard color options for the iris.
+	  	"Eye Color": ["Brown", "Brown Light", "Brown Dark", "Brown Honey", "Brown Chocolate", "Hazel", "Amber", "Black", "Blue", "Blue Light", "Blue Dark", "Blue Ice", "Blue Turquoise", "Green", "Green Pale", "Green Sea", "Green Olive", "Gray", "Gray Light", "Gray Dark"],
+	  	// Describes the length, volume, and style of the eyelashes.
+	  	"Eyelashes": ["Short", "Long", "Thick", "Sparse", "Curled", "Straight", "Natural", "Colored", "False lashes", "Eyelash extensions"],
+	  	// Describes the appearance and grooming of the eyebrows.
+	  	"Eyebrows": [ "Thin", "Thick", "Arched", "Straight", "Bushy", "Flat", "High-arched", "Unibrow", "Natural", "Well-groomed", "Drawn", "Tattooed", "Microbladed"],
+	  	// Relative size of the eyes in the face (one of the "special sort" features).
+	  	"Eye Size": ["Small", "Medium"],
+	  	// Specific details of the skin under the eye.
+	  	"Under-eye Detail": ["None", "Light dark circles", "Pronounced dark circles", "Eye bags", "Slight puffiness", "Tired look"],
+	  	// Describes the visual texture and patterns within the iris (the colored part).
+	  	"Iris Detail": ["Smooth iris", "Ringed iris", "Starburst pattern", "Speckled pattern", "High-contrast iris", "Soft gradient iris"],
+	  	// Describes the tint or color of the sclera (the white part of the eye).
+	  	"Sclera Tint": ["Bright white", "Slightly off-white", "Reddish tint", "Bluish tint", "Veiny sclera"],
+	  	// Focused options for eyebrow density.
+	  	"Eyebrow Thickness": ["Sparse", "Medium density", "Thick"],
+	  	// Specifies if the eyes are perfectly symmetric.
+	  	"Eye Asymmetry": ["Perfect symmetry", "Slight asymmetry"]	  
+	},
+
+	// --- NOSE CATEGORY ---
+	/**
+	 * Features describing the structure and specific attributes of the nose.
+	 */
+	Nose: {
+		// General classification of the nose's profile and overall form.
+		"Nose Shape": ["Straight", "Aquiline (Roman)", "Upturned (Button/Pixie)", "Broad / Wide", "Narrow / Slim", "Celestial (Small, slightly curved)", "Nubian (Long, broad base)"], 
+		// Prominence and defining characteristics of the nasal structure.
+		"Nose Feature": ["Prominent", "Delicate / Subtle", "Rounded Tip", "Pointed Tip", "High Bridge", "Low Bridge", "With a slight bump (Dorsal Hump)"], 
+		// Relative size of the nose.
+		"Nose Size": ["Small", "Medium", "Large"],
+		// The outline and spread of the nostrils.
+		"Nostril Shape": ["Narrow", "Wide", "Rounded", "Flared", "Small"],
+		// Describes the profile of the nasal bridge.
+		"Nose Bridge Shape": ["Straight bridge", "Convex bridge", "Concave bridge", "Flat bridge", "High bridge", "Low bridge"],
+		// The characteristic of the very end of the nose.
+		"Nose Tip Definition": ["Rounded tip", "Pointed tip", "Bulbous tip", "Flat tip", "Drooping tip", "Upturned tip"],
+		// Width of the nose where it meets the face.
+		"Nose Base Width": ["Narrow base", "Medium width base", "Wide base"],
+		// Specifies if the nose is perfectly symmetric.
+		"Nose Symmetry": ["Perfect symmetry", "Slight asymmetry"]
+	},	
+
+	// --- LIPS CATEGORY ---
+	/**
+	 * Features detailing the shape, size, and texture of the mouth and lips.
+	 */
+	Lips: {
+	  	// The outline or form of the lips.
+	  	"Lip Shape": ["Full","Thin","Bow-shaped","Heart-shaped","Round","Wide","Uneven","Downturned","Upturned","Cupid's bow pronounced","Flat","Protruding"],
+	  	// Relative size of the lips (one of the "special sort" features).
+	  	"Lip Size": ["Small","Medium","Large","Very small","Average"],
+	  	// How clearly the lip borders and cupid's bow are defined.
+	  	"Lip Definition": ["Well-defined","Soft","Sharp cupid's bow","Undefined","Subtle","Pronounced","Rounded","Angular"],
+	  	// Describes the surface quality and fullness of the lips.
+	  	"Lip Texture": ["Smooth","Dry","Glossy","Matte","Natural","Chapped","Plump","Soft","Velvety"],
+	  	// The direction of the mouth corners when the face is neutral.
+	  	"Lip Corner Direction": ["Neutral corners", "Upturned corners", "Downturned corners", "Slight smile corners"],
+	  	// Specifies if the lips are perfectly symmetric.
+	  	"Lip Symmetry": ["Perfect symmetry", "Slight asymmetry"],
+      	// How much of the teeth are visible when the mouth is relaxed.
+      	"Teeth Visibility": ["Closed lips", "Subtle teeth visible", "Teeth showing"]	  
+	},
+
+	// --- BODY CATEGORY ---
+	/**
+	 * Features covering the general physique, proportions, and muscle structure.
+	 */
+	Body: {
+    	// General classifications based on weight and overall build.
+    	"Body Type": [ "Extremely Slim", "Slim", "Fit", "Athletic", "Average", "Curvy", "Plus-size", "Fat", "Extremely Fat", "Obese", "Extremely Obese" ],
+    	// Geometric descriptions of the body's silhouette.
+    	"Body Shape": [ "Hourglass", "Pear-shaped", "Inverted Triangle", "Rectangle", "Oval", "Diamond", "Round", "Straight", "V-shape" ],
+    	// Relative height (one of the "special sort" features).
+    	"Height": [ "Very Short", "Short", "Medium", "Tall", "Very Tall" ],
+    	// Description of how the person holds themselves.
+    	"Posture": [ "Relaxed", "Straight", "Elegant", "Confident", "Slouched", "Stooped", "Dynamic", "Rigid" ],
+    	// Definition level of the abdominal muscles.
+    	"Abs": [ "None", "Slightly defined", "Defined", "Very defined / six-pack", "Chiseled", "Soft" ],
+    	// Relative length of the legs.
+    	"Leg Length": [ "Short legs", "Average legs", "Long legs", "Very long legs" ],
+    	// Relative length of the arms.
+    	"Arm Length": [ "Short arms", "Average arms", "Long arms", "Very long arms" ],
+    	// Describes the midsection circumference.
+    	"Waist": [ "Small waist", "Narrow waist", "Average waist", "Wide waist", "Thick waist" ],
+    	// Descriptions for the shape, size, and firmness of the hips and glutes.
+    	"Hips / Glutes": [ "Flat", "Slightly Curved", "Average", "Curvy", "Full", "Voluptuous", "Round", "Wide", "Athletic", "Pear-shaped", "Hourglass", "Muscular", "Firm", "Drooping" ],
+    	// Detailed descriptions of the main trunk of the body.
+    	"Torso": [ "Slim", "Athletic", "Average", "Curvy", "Stocky", "Muscular", "Long", "Short", "Hourglass", "Inverted Triangle", "Rectangle", "Pear-shaped", "Broad", "Narrow", "Lean" ],
+    	// Descriptions for the upper body structure, including arms.
+    	"Shoulders / Arms": [ "Narrow", "Average", "Broad", "Muscular", "Toned", "Slender", "Defined", "Stocky", "Rounded", "Angular", "Sloping" ],
+    	// Descriptions for the chest and bust area.
+    	"Chest / Bust": [ "Flat", "Small", "Slight", "Medium", "Average", "Large", "Full", "Rounded", "Prominent", "Muscular", "Athletic" ],
+    	// Descriptions for the back structure.
+    	"Back": [ "Narrow", "Average", "Broad", "Muscular", "Toned", "Slender", "Rounded", "Stocky", "Defined", "Flat" ],
+    	// Specifies where body fat tends to accumulate.
+    	"Body Fat Distribution": [ "Upper body concentrated", "Lower body concentrated", "Evenly distributed", "Central (abdomen) concentrated", "Minimal fat" ],
+    	// The level of visible muscle tone and striation.
+    	"Muscle Definition": [ "Low definition", "Soft athletic", "Visible muscle tone", "High definition", "Competition-level definition" ],
+    	// Describes the relationship between the lengths of different body parts.
+    	"Body Proportion": [ "Long torso", "Short torso", "Long legs dominant", "Balanced proportions" ],
+    	// Describes the angle of the shoulders.
+    	"Shoulder Slope": [ "Neutral shoulders", "Slightly sloped shoulders", "Strong shoulder slope" ],
+    	// How visible the collarbones are.
+    	"Collarbone Visibility": [ "Not visible", "Slightly visible", "Prominent collarbones" ],
+		// Redundant feature (Face Shape is already in 'Face' category) - kept for completeness but needs review in application logic.
+    	"Facial Fullness": [ "Very Slim", "Slim", "Fit", "Average", "Curvy", "Plus-size", "Fat", "Extremely Fat", "Obese", "Extremely Obese", "Round", "Square", "Oval", "Heart-shaped", "Diamond-shaped" ],
+		// Descriptions for the shape and build of the legs.
+    	"Legs Fullness": [ "Very Slim", "Slim", "Fit", "Average", "Muscular", "Curvy", "Plus-size", "Fat", "Extremely Fat", "Obese", "Extremely Obese", "Long", "Short", "Proportional" ],
+    	// Descriptions for the shape and build of the arms.
+    	"Arms Fullness": [ "Very Slim", "Slim", "Fit", "Average", "Muscular", "Curvy", "Plus-size", "Fat", "Extremely Fat", "Obese", "Extremely Obese", "Toned", "Soft" ]
+	},
+
+	// --- EXPRESSION CATEGORY ---
+	/**
+	 * Features focusing on the character's emotional state and mood.
+	 */
+	Expression: {
+	  	// Detailed list of emotions or moods expressed through the face.
+	  	"Facial Expression": ["Happy","Joyful","Smiling","Sad","Tearful","Angry","Furious","Surprised","Shocked","Neutral","Pensive","Confused","Excited","Bored","Flirty","Seductive","Fierce","Skeptical","Winking","Grinning","Smirking","Laughter","Thoughtful","Anxious","Embarrassed","Shy","Smug","Curious","Disgusted","Fearful","Sleepy","Relaxed","Determined","Confident","Mischievous","Nervous","Relieved","Frustrated","Astonished","Pouty","Suspicious","Overjoyed"],
+	  	// Detailed list of emotions or moods expressed through body language.
+		// NOTE: Currently duplicates the Facial Expression list for simplicity, but conceptually distinct.
+	  	"Body Expression": ["Happy","Joyful","Smiling","Sad","Tearful","Angry","Furious","Surprised","Shocked","Neutral","Pensive","Confused","Excited","Bored","Flirty","Seductive","Fierce","Skeptical","Winking","Grinning","Smirking","Laughter","Thoughtful","Anxious","Embarrassed","Shy","Smug","Curious","Disgusted","Fearful","Sleepy","Relaxed","Determined","Confident","Mischievous","Nervous","Relieved","Frustrated","Astonished","Pouty","Suspicious","Overjoyed"]
+	}, 
+
+	// --- POSE CATEGORY ---
+	/**
+	 * Features describing the posture, style, and activity of the subject.
+	 */
+	"Pose": {
+	  	// General stylistic context of the pose (e.g., for a photoshoot or a scene).
+	  	"Pose Style":["Fashion Editorial","Casual Lifestyle","Action/Dynamic","Minimalist","Dramatic","Athletic/Fitness","Street Style","Editorial Avant-garde","Relaxed/Home","Formal/Business","Romantic/Cinematic","Dance/Performance","Yoga/Pilates","Sport/Competition","Theatrical/Character","Editorial Concept","Lifestyle Storytelling","Candid/Realistic","Silhouette/Abstract","Playful/Whimsical"],
+	  	// Describes the overall position of the body.
+	  	"Body Position":["Standing","Sitting","Sitting on chair","Lying Down","Leaning","Crouching/Kneeling","Walking","Running","Dancing","Jumping","Reclining","Stretching","Squatting","Balancing","Twisting","Reaching","Stretching arms","Cross-legged","Side Lunge","Backbend","Handstand","Bridge","Split","Crawling","Carrying Object","Bent Over"],
+	  	// Specific placement and action of the hands and arms.
+	  	"Hand/Arm Placement":["Hands on Hips","Hands in Pockets","Arms Crossed","Hand Touching Face","Hand Touching Hair","Arms Relaxed at Sides","Holding an Object","Hands Raised","Resting Head on Hand","Hands Behind Back","Hands on Waist","Hands Clasped","Arms Folded Behind Head","Gesture Pointing","Hand on Chin","Hands on Knees","One Arm Up, One Arm Down","Arms Extended Forward","Hands Interlocked","Hands Covering Face","Hands on Shoulders","Hands on Chest"],
+	  	// Specific placement and action of the legs and feet.
+	  	"Leg/Foot Placement":["Legs Together","Legs Apart","One Leg Forward","One Leg Back","Crossed Legs","Kneeling","Lunging","Feet on Tiptoe","Legs Bent","Legs Straight","Legs Relaxed","Standing on One Leg","Foot on Chair/Surface","Legs Folded","Crouched Feet Position"],
+	  	// Describes the angle and orientation of the head and neck.
+	  	"Head/Neck Position":["Head Tilted Forward","Head Tilted Back","Head Tilted Sideways","Chin Up","Chin Down","Looking Up","Looking Down","Looking Sideways","Facing Forward","Head Resting on Hand/Surface","Neck Extended","Neck Relaxed","Head Turned Over Shoulder"],
+	  	// A very detailed list of activities the subject might be engaged in.
+	  	"Activity/Context": [ 
+			"Taking Selfie", "Reading Book", "Reading Newspaper", "Reading Magazine", "Reading Tablet", "Writing Notes", "Writing Letter", "Typing on Laptop", "Using Desktop Computer", "Talking on Phone", "Video Calling", "Listening to Music", "Cooking", "Baking", "Cutting Vegetables", "Serving Food", "Eating", "Drinking Water", "Drinking Coffee", "Cleaning Window", "Sweeping Floor", "Mopping Floor", "Dusting Shelves", "Washing Dishes", "Doing Laundry", "Folding Clothes", "Carrying Groceries", "Shopping", "Paying at Store", "Using Tools (DIY)", "Fixing Something", "Painting", "Sketching", "Coloring", "Playing Musical Instrument (Guitar)", "Playing Musical Instrument (Piano)", "Playing Musical Instrument (Violin)", "Filming with Camera", "Taking Photos", "Studying", "Teaching", "Giving Presentation", "Work on Construction", "Driving", "Opening Door", "Locking Door", "Walking Dog", "Feeding Pet", "Playing with Pet", "Gardening", "Watering Plants", "Planting Seeds", "Jogging", "Working Out", "Lifting Weights", "Yoga Practice", "Pilates Exercise", "Cycling", "Playing Basketball", "Playing Soccer", "Playing Tennis", "Swimming (Context)", "Climbing Stairs", "Stretching", "Packing Luggage", "Carrying Luggage", "Checking Map", "Waiting for Bus", "Calling Taxi", "Watching TV", "Gaming with Controller", "Virtual Reality Interaction", "Shopping Online", "Meditating", "Clapping", "Cheering", "Applauding", "Hugging Someone", "Helping Someone Walk", "Holding Baby", "Pushing Stroller", "Celebrating Birthday", "Blowing Candles", "Opening Gift", "Using ATM", "Signing Document", "Handshaking", "Checking Time on Watch", "Adjusting Glasses", "Applying Makeup", "Brushing Teeth", "Combing Hair", "Putting on Jacket", "Wearing Backpack", "Tying Shoelaces", "Taking Out Trash", "Recycling", "Sewing", "Knitting", "Ironing Clothes", "Reading Menu", "Ordering Food", "Taking Notes on Clipboard", "Inspecting Object", "Demonstrating Product", "Bowling", "Throwing Ball", "Catching Ball", "First Aid Assistance", "Police/Traffic Direction", "Construction Site Planning", "Stage Performance (Acting)", "Dance Performance Context", "Magic Trick Gesture" 
+	  	] 	  
+	},
+
+	// --- PROMPT GENERATION CATEGORY ---
+	/**
+	 * Features related to the technical or stylistic aspects of the final image generation.
+	 */
+	"Prompt Generation": {
+	  	// Specifies the framing or composition of the image (one of the "special sort" features).
+	  	"Image Type": ["Full Body","Portrait","Headshot","Bust","Close-up","Profile","3/4 View","Back View", "Front View","Side View","Over-the-shoulder","Top-down","Low-angle","High-angle","Dynamic Angle","Action Shot"]
+	}
+
+};
+
+/**
+ * @fileoverview Configuration object defining fundamental, universal attributes 
+ * for character generation, which are often used across all models or contexts.
+ * * The structure is: Feature Name -> Array of Options.
+ */
+const commonBase = {
+	
+	// --- CORE BIOLOGICAL/APPEARANCE FEATURES ---
+
+	/**
+	 * Options describing the general tone, shade, and undertone of the skin.
+	 * This array moves from the lightest (Very Fair/Porcelain) to the darkest (Deep/Ebony) 
+	 * and includes specific descriptive terms (Caramel, Olive, Honey, etc.).
+	 */
+	"Skin / Complexion": [
+		"Very Fair","Fair","Light","Light-Medium","Medium","Olive","Tan","Dark","Deep","Ebony","Porcelain","Caramel","Honey","Golden","Bronze","Chestnut","Ivory","Beige","Sand","Almond","Mahogany","Espresso","Sienna"
+	],
+
+	/**
+	 * Defines age ranges in 5-year increments, allowing for precise specification of maturity.
+	 * Age is often a critical factor in model generation prompts, and this structure 
+	 * allows the user to target specific life stages from Young Adult through Centenarian.
+	 * NOTE: This is categorized as a 'special sort' feature in utility functions to ensure 
+	 * the chronological order is maintained.
+	 */
+	"Age": [
+		"Young Adult (20-24)","Young Adult (25-29)","Adult (30-34)","Adult (35-39)",
+		"Middle-Aged (40-44)","Middle-Aged (45-49)","Middle-Aged (50-54)",
+		"Senior (55-59)","Senior (60-64)",
+		"Elderly (65-69)","Elderly (70-74)",
+		"Very Elderly (75-79)","Very Elderly (80-84)","Nonagenarian (85-89)","Very Elderly (90-94)",
+		"Centenarian (95-99)","Centenarian (100+)"
+	],
+	
+	/**
+	 * A comprehensive, region-based list of ethnicities and national origins.
+	 * This feature is crucial for guiding the model's output towards specific cultural,
+	 * genetic, and regional appearances. The list is organized geographically:
+	 * 1. Western/Northern Europe (Norwegian, French, British)
+	 * 2. Southern/Southeastern Europe (Italian, Greek, Balkan)
+	 * 3. Eastern Europe (Polish, Ukrainian)
+	 * 4. North Africa / Sub-Saharan Africa (Egyptian, Nigerian, South African)
+	 * 5. Middle East / South Asia (Arab, Indian)
+	 * 6. East Asia / Southeast Asia (Chinese, Japanese, Thai)
+	 * 7. Central Asia (Kazakh, Uzbek)
+	 * 8. The Americas (American, Latino, Caribbean)
+	 * 9. Oceania (Australian, Maori, Polynesian)
+	 * 10. Indigenous Groups (Native American, Inuit)
+	 * 11. Mixed Heritage Categories (Afro-European, Eurasian)
+	 * 12. Generic/Fallback (Other, Unspecified)
+	 */
+	"Ethnicity": [
+		"Eurasian", "Norwegian", "Swedish", "Danish", "Finnish", "Icelandic", 
+		"French", "German", "Dutch", "Belgian", "Swiss", "Austrian", "British", "Irish", 
+		"Italian", "Spanish", "Portuguese", "Maltese", 
+		"Greek", "Cypriot", "Turkish", 
+		"Serbian", "Croatian", "Bosnian", "Bulgarian", "Albanian", "North Macedonian", "Montenegrin", "Kosovar", "Slovenian", 
+		"Polish", "Ukrainian", "Romanian", "Belarusian", "Czech", "Slovak", "Hungarian", "Moldovan", 
+		"Egyptian", "Moroccan", "Algerian", "Tunisian", "Libyan", 
+		"Nigerian", "Ghanaian", "Senegalese", "Ivorian", "Cameroonian", 
+		"Kenyan", "Ethiopian", "Somali", "Ugandan", "Tanzanian", 
+		"Congolese", "Chadian", "Gabonese", 
+		"South African", "Zimbabwean", "Botswanan", "Namibian", "Mozambican", 
+		"Arab", "Persian", "Kurdish", "Turkish", "Armenian", "Lebanese", "Syrian", "Israeli", "Palestinian", 
+		"Indian", "Pakistani", "Bangladeshi", "Sri Lankan", "Nepali", "Bhutanese", "Maldivian", 
+		"Chinese", "Japanese", "Korean", "Mongolian", "Taiwanese", 
+		"Thai", "Vietnamese", "Filipino", "Indonesian", "Malaysian", "Cambodian", "Lao", "Burmese", "Singaporean", "Bruneian", 
+		"Kazakh", "Uzbek", "Turkmen", "Kyrgyz", "Tajik", 
+		"American", "Canadian", 
+		"Mexican", "Guatemalan", "Honduran", "Costa Rican", "Panamanian", "Nicaraguan", 
+		"Brazilian", "Argentine", "Chilean", "Colombian", "Peruvian", "Venezuelan", "Ecuadorian", "Bolivian", "Paraguayan", "Uruguayan", 
+		"Cuban", "Jamaican", "Haitian", "Dominican", "Puerto Rican", "Trinidadian", 
+		"Latino", "Hispanic", 
+		"Australian", "New Zealander", 
+		"Fijian", "Samoan", "Tongan", "Papua New Guinean", "Micronesian", "Polynesian", 
+		"Native American", "First Nations", "Aboriginal Australian", "Maori", "Inuit", "Amazonian", 
+		"Afro-European", "Latino-Asian", "Afro-Asian", "Other Mixed Heritage", 
+		"Other", "Unspecified", "Mediterranean", "Latin American"
+	]	
+};
+
+
+/**
+ * @fileoverview Configuration object defining features that are either specific to, 
+ * or have different common options for, the female gender in the prompt generator context.
+ * * The structure is: Category -> Feature Name -> Array of Options.
+ * It extends or overrides features from commonBase/commonFeatures.
+ */
+const femaleSpecific = {
+	
+	// --- BASE (Overrides/Extensions) CATEGORY ---
+	/**
+	 * Fundamental features shared with commonBase, with potential modifications 
+	 * or necessary inclusion of the Gender setting itself.
+	 */
+	Base: {
+		// Explicitly includes "Female" as the primary gender option, alongside "Male" 
+		// for completeness or for use in a context where this object is merged.
+	  	"Gender": ["Female", "Male"],
+	  	// Extends the common "Skin / Complexion" list with options like "Freckled," 
+		// which is often a highly desired and specific detail for female characters.
+	  	"Skin / Complexion": [
+			...commonBase["Skin / Complexion"], 
+			"Freckled"
+		]
+	},
+
+	// --- HAIR CATEGORY (Expanded for Women) ---
+	/**
+	 * Extensive options for hair, reflecting the broader range of styles, colors, 
+	 * and lengths commonly associated with and requested for female models.
+	 */
+	Hair: {
+	  	// A comprehensive list of hairstyles, covering everything from short cuts (Pixie) 
+		// to long styles (Layered, Beach Waves) and various complex updos and braids.
+	  	"Hair Style": ["Messy waves", "Curly", "Braided", "Ponytail", "Bun", "Afro", "Mohawk", "French braid", "Dutch braid", "Messy bun", "Half-up half-down", "Beach waves", "Tight curls", "Finger waves", "Side-swept", "Updo", "Loose curls", "Low ponytail", "High ponytail", "Braided bun", "Double braids", "Space buns", "Top knot", "Chignon", "Twisted updo", "Side bun", "Fishtail braid", "Crown braid", "Waterfall braid", "Cornrows", "Dreadlocks", "Curly ponytail", "Curly bob", "Undercut feminine", "Partially shaved side", "Half shaved head", "Wet look", "Slicked back", "Vintage waves", "Retro curls", "Voluminous blowout", "Natural texture", "Feathered hair", "Flipped ends", "Braided crown", "Halo braid", "Tousled curls", "Side-swept bangs", "Curtain bangs", "Blunt bangs", "Layered bangs", "Mohawk braid", "Pigtails", "Side ponytail", "Bubble ponytail", "Twists", "Rope braid", "Dutch crown braid", "French twist", "Fishtail ponytail", "Waterfall ponytail"],
+	  	// An exhaustive list of hair colors, including natural, fantasy, metallic, and two-tone options.
+		// This caters to a wide range of creative and fashion-forward requests.
+	  	"Hair Color": ["Blonde Balayage", "Auburn", "Black", "Blonde", "Blue", "Bronze", "Brown", "Burgundy", "Caramel", "Chestnut", "Copper", "Coral", "Dip-dyed", "Gray", "Green", "Lavender", "Lilac", "Magenta", "Mahogany", "Orange", "Peach", "Purple", "Rainbow", "Red", "Salt and Pepper", "Silver", "Silver/Gray", "Teal", "Turquoise", "Two-tone", "Violet", "White", "Yellow", "Black Blue", "Black Jet", "Blonde Ash", "Blonde Champagne", "Blonde Dark", "Blonde Golden", "Blonde Honey", "Blonde Light", "Blonde Ombre", "Blonde Platinum", "Blonde Strawberry", "Blue Electric", "Brown Ash", "Brown Balayage", "Brown Chocolate", "Brown Dark", "Brown Golden", "Brown Light", "Brown Ombre", "Caramel Balayage", "Gold Rose", "Green Emerald", "Green Mint", "Grey Ash", "Pink Baby", "Pink Hot", "Pink Pastel", "Red Deep", "Red Ombre", "Silver Platinum"],
+	  	// Length options, specifically including very long lengths often desired for female characters.
+		// NOTE: This is categorized as a 'special sort' feature in utility functions to ensure a logical order.
+	  	"Hair Length": ["Medium", "Buzz cut","Very short","Short", "Long","Very long","Waist-length","Hip-length","Floor-length"],
+	  	// Descriptive terms for the tactile and visual quality of the hair.
+	  	"Hair Texture": ["Wavy", "Straight","Curly","Afro","Frizzy","Smooth","Coily","Kinky","Loose curls","Textured","Silky"],
+	  	// Placement and style of the hair separation.
+	  	"Hair Parting": ["Deep side part", "Middle part","Side part","No part","Zig-zag part","Off-center part"],
+	  	// Descriptive terms for the fullness and density of the hair.
+		// NOTE: This is categorized as a 'special sort' feature in utility functions to ensure a logical order.
+	  	"Hair Volume": ["Full-bodied", "Thin","Medium","Thick","Voluminous","Flat","Light","Heavy"],
+	  	// Options for common hair decorations and styling elements.
+	  	"Hair Accessories": ["None","Hair clip","Headband","Ribbon","Flower","Hairpin","Scarf","Hat","Barrette","Tiara","Beads","Scrunchie","Bow","Hair comb","Decorative pins","Hair chain"]
+	},
+
+	// --- MAKEUP CATEGORY (Female Specific) ---
+	/**
+	 * Detailed features related to cosmetic application, which are typically essential 
+	 * for female models unless a specific "no makeup" look is desired.
+	 */
+	Makeup: {
+	  	// Variety of lipstick shades and finishes.
+	  	"Lipstick Color": ["Natural","Pink","Rose","Red","Dark Red","Burgundy","Purple","Coral","Brown","Peach","Plum","Mauve","Magenta","Fuchsia","Wine","Brick","Orange","Glossy Pink","Metallic Gold","Satin Red"],
+	  	// Coverage levels and finish types for facial base makeup.
+	  	"Foundation": ["None","Light coverage","Medium coverage","Full coverage","Matte finish","Dewy finish","Glowy finish","Sheer","Heavy coverage","Airbrush finish"],
+	  	// Styles and colors for mascara application.
+	  	"Mascara": ["None","Black","Brown","Blue","Thick & Long lashes","Natural look","Waterproof","Volumizing","Lengthening","Colored Mascara","Dramatic Lashes"],
+	  	// Styles, colors, and finishes for eyeshadow.
+	  	"Eye Shadow": ["None","Neutral","Smokey","Bold colors","Shimmer","Matte","Glitter","Pastel tones","Metallic","Warm tones","Cool tones","Gradient","Cut crease","Halo eyes","Smudged"],
+	  	// Styles and application techniques for eyeliner.
+	  	"Eye Liner": ["None","Thin line","Thick line","Winged","Smokey","Colored","Tightline","Graphic","Cat eye","Double wing"],
+	  	// Shades and finishes for cheek blush/contouring.
+	  	"Blush": ["None","Light pink","Peach","Rose","Coral","Bronze","Plum","Berry","Terracotta","Soft pink","Highlighter-blush combo","Matte Blush"]
+	},
+
+	// --- CLOTHING CATEGORY (Expanded for Women) ---
+	/**
+	 * Highly detailed clothing options, reflecting the complexity and variety 
+	 * in female fashion, categorized by garment type, color, fabric, and pattern.
+	 */
+	Clothing: {
+		// Variety of upper body garments, from casual to formal and swimwear.
+    	"Top": ["T-shirt","Shirt","Sweater","Jacket","Blazer","Hoodie","Tank top","Polo shirt","Vest","Blouse","Cardigan","Tunic","Crop Top","Bodysuit","Kimono","Bikini Top","Cami Top","Tube Top","Halter Top","Bardot Top","Off-the-Shoulder Top","Peplum Top","Turtleneck","Jersey Top","Gauze Top","Wrap Top","Asymmetrical Top","Mesh Top","Sheer Top","Button-up Shirt","Denim Shirt","Silk Blouse","Sequin Top","Peasant Top","Ruffle Top","Sweatshirt","Poncho","Cape Top","Corset Top","Hooded Top","Leather Jacket Top","Bomber Jacket Top", "Bikini"],
+
+		// Variety of lower body garments, including trousers, shorts, and multiple skirt styles and lengths.
+		"Bottom": ["Skinny Jeans","Straight-Leg Jeans","Bootcut Jeans","Boyfriend Jeans","Mom Jeans","High-Waist Jeans","Trousers (Tailored)","Chinos","Cargo Pants","Dress Pants","Long Shorts","Short Shorts","Bermuda Shorts","Culottes","Capri Pants (3/4)","Ankle Pants (7/8)","Palazzo Pants","Wide-Leg Pants","Flared Pants","Cigarette Pants","Joggers","Sweatpants","Harem Pants","Mini Skirt","Knee-length Skirt","Midi Skirt","Maxi Skirt","Pencil Skirt","A-Line Skirt","Pleated Skirt","Wrap Skirt","Skort","Leggings","Jeggings","Bikini Bottom","Track Pants","Leather Pants","Faux Leather Pants","Denim Shorts","Paperbag Pants","Tapered Pants","Utility Pants","Peplum Skirt","Asymmetrical Skirt","Layered Skirt","Wrap Pants","Harem Skirt","Palazzo Skirt","High-Slit Skirt","Mermaid Skirt","Culotte Skirt", "Bikini"],
+		
+		// Color options for the upper garment, including various tones and metallics.
+		"Top Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],
+		// Fabric and material options for the upper garment.
+		"Top Fabric": ["Cotton","Linen","Wool","Denim","Leather","Polyester","Knitted","Silk","Flannel","Rayon","Satin","Chiffon","Velvet","Organza","Tulle","Jersey","Mesh","Denim Stretch","Faux Leather","Corduroy","Suede"],
+		// Pattern options for the upper garment.
+		"Top Pattern": ["Solid", "Striped", "Plaid", "Checkered", "Geometric", "Abstract", "Camouflage", "Floral", "Polka dot", "Animal print", "Tie-dye", "Houndstooth", "Chevron", "Paisley", "Pinstripe", "Gingham", "Ikot", "Ethnic print", "Patchwork", "Tartan", "Herringbone", "Seersucker", "Lace", "Tapestry", "Millefleur", "Argyll", "Toile de Jouy"],
+		
+		// Color options for the lower garment.
+		"Bottom Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],
+		// Fabric and material options for the lower garment.
+		"Bottom Fabric": ["Denim","Cotton","Linen","Wool","Polyester","Leather","Corduroy","Velvet","Spandex","Faux Leather","Denim Stretch","Tulle","Jersey","Chiffon","Suede","Silk","Satin","Knitted"],
+		// Pattern options for the lower garment.
+		"Bottom Pattern": ["Solid", "Striped", "Plaid", "Checkered", "Geometric", "Abstract", "Camouflage", "Floral", "Polka dot", "Animal print", "Tie-dye", "Houndstooth", "Chevron", "Paisley", "Pinstripe", "Gingham", "Ikot", "Ethnic print", "Patchwork", "Tartan", "Herringbone", "Seersucker", "Lace", "Tapestry", "Millefleur", "Argyll", "Toile de Jouy"],
+
+		// Variety of footwear options, covering athletic, casual, and a wide array of heels and boots.
+		"Shoes": ["Sneakers","Boots","Formal shoes","Sandals","Barefoot","Loafers","Oxfords","Derby shoes","Heels","Pumps","Flats","Espadrilles","Wedges","Ankle Boots","Knee-high Boots","Over-the-knee Boots","Chelsea Boots","Combat Boots","Platform Heels","Stiletto Heels","Block Heels","Mules","Slip-ons","Mary Janes","Gladiator Sandals","Thong Sandals","Slides","Ballet Flats","Oxford Flats","Boat Shoes","Clogs","Kitten Heels","Peep-toe Heels","Sock Boots","Sneaker Boots"],
+		// Color options for footwear.
+		"Shoes Color": ["Black","Brown","White","Gray","Navy","Beige","Tan","Metallic Silver","Metallic Gold","Red","Skin Tone","Blush","Burgundy","Pastel Pink","Pastel Blue","Olive","Taupe","Espresso","Chocolate","Coral","Mint","Lavender","Fuchsia","Teal","Turquoise","Multi-color","Ombre"],
+		// Material options for footwear.
+		"Shoes Material": ["Leather","Suede","Canvas","Synthetic","Patent Leather","Jute","Rubber","Velvet","Mesh","Denim","Faux Leather","Faux Suede","Knit","Satin","Cork","Wood","Plastic","Glossy PVC"],
+		
+		// Comprehensive options for coats, jackets, and other outerwear, including different styles and lengths.
+		"Outerwear": ["Coat","Trench coat","Puffer jacket","Peacoat","Denim jacket","Leather/Moto jacket","Cardigan","Blazer","Cape","Poncho","Parka","Anorak","Bomber jacket","Windbreaker","Vest","Gilet","Duster coat","Shrug","Raincoat","Faux Fur Coat","Shearling Jacket","Quilted Jacket","Hooded Coat","Peplum Jacket","Cropped Jacket","Longline Coat","Wrap Coat","Tailcoat","Kimono Jacket","Capelet","Blouson Jacket","Utility Jacket","Trucker Jacket","Field Jacket","Overcoat","Chesterfield Coat"],
+
+		// Color options for the outerwear.
+		"Outerwear Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],	
+		
+		// One-piece garments, including various dress styles, gowns, jumpsuits, and rompers.
+		"Dress Jumpsuit": ["Maxi dress","Midi dress","Mini dress","Sheath dress","A-line dress","Sundress","Jumpsuit","Romper","Overall","Wrap dress","Shift dress","Bodycon dress","Mermaid dress","Ball gown","Evening gown","Cocktail dress","Tea-length dress","Peplum dress","Tunic dress","Shirt dress","Kaftan","Slip dress","Halter dress","Off-the-shoulder dress","Tiered dress","Pleated dress","Asymmetrical dress","Empire waist dress","Corset dress","Blazer dress","Pinafore dress","Palazzo jumpsuit","Wide-leg jumpsuit","Utility jumpsuit","Culotte jumpsuit","Sporty romper","Denim romper","Lace dress","Sheer dress","Layered dress"],	
+		
+		// Color options for one-piece garments.
+		"Dress Jumpsuit Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],	
+
+		// General outfit style/context, offering high-level stylistic guidance.
+		"Outfit": ["Casual outfit","Business suit","Sporty outfit","Formal tuxedo","Summer outfit","Winter outfit","Smart casual","Streetwear","Cocktail dress","Athleisure","Bohemian look","Evening Gown","Wedding dress","Party outfit","Clubwear","Resort wear","Loungewear","Festival outfit","Gothic look","Punk look","Vintage outfit","Retro outfit","Office wear","Casual chic","Formal gown","Red carpet look","Casual layering","Preppy look","Minimalist outfit","Maximalist outfit","Layered outfit","Elegant evening wear","Country casual","Beachwear","Casual blazer look","Designer fashion","Avant-garde fashion","Statement outfit"],
+		
+		// Options for brand inspiration, explicitly including the instruction "without brand stamp" 
+		// to adhere to content generation guidelines (avoiding unauthorized brand logos). 
+		// Includes a mix of high-street and luxury brands.
+		"Brand inspired by": ["Zara without brand stamp", "H&M without brand stamp", "Mango without brand stamp", "Uniqlo without brand stamp", "Primark without brand stamp", "Forever 21 without brand stamp", "Shein without brand stamp", "ASOS without brand stamp", "Pull & Bear without brand stamp", "Bershka without brand stamp", "Stradivarius without brand stamp", "Gucci without brand stamp", "Prada without brand stamp", "Versace without brand stamp", "Chanel without brand stamp", "Dior without brand stamp", "Louis Vuitton without brand stamp", "Balenciaga without brand stamp", "Saint Laurent without brand stamp", "Burberry without brand stamp", "Givenchy without brand stamp", "Valentino without brand stamp", "Nike without brand stamp", "Adidas without brand stamp", "Puma without brand stamp", "Supreme without brand stamp", "Off-White without brand stamp", "The North Face without brand stamp", "Patagonia without brand stamp", "COS without brand stamp", "Everlane without brand stamp", "Reformation without brand stamp", "Pink Woman without brand stamp", "Princess Polly without brand stamp", "Urban Outfitters without brand stamp", "Boohoo without brand stamp", "PrettyLittleThing without brand stamp", "Monki without brand stamp", "Ganni without brand stamp", "Sézane without brand stamp"],	
+		
+		// A comprehensive list of common fashion accessories, including jewelry, bags, and headwear.
+    	"Accessories": ["None","Scarf","Hat","Belt","Jewelry","Handbag","Sunglasses","Gloves","Tights","Socks","Hair Accessories","Watch","Wallet","Purse","Headband","Tie","Bowtie","Umbrella","Key Chain","Necklace","Bracelet","Earrings","Anklet","Choker","Brooch","Hair Clip","Hair Pin","Hairband","Clutch","Crossbody Bag","Backpack","Fanny Pack","Messenger Bag","Ring","Cufflinks","Pocket Square","Suspenders","Gloves Leather","Fingerless Gloves","Wristband","Hat Pin","Bandana","Hair Comb","Hair Scarf"]
+	}
+};
+
+/**
+ * @fileoverview Configuration object defining features that are either specific to, 
+ * or have different common options for, the male gender in the prompt generator context.
+ * * The structure is: Category -> Feature Name -> Array of Options.
+ * This structure is used to tailor the available options based on the chosen gender.
+ */
+const maleSpecific = {
+	
+	// --- BASE (Overrides/Extensions) CATEGORY ---
+	Base: {
+		// Explicitly includes "Male" as the primary gender option, alongside "Female" 
+		// for completeness or for use in a context where this object is merged.
+	  	"Gender": ["Female", "Male"],
+	},
+
+	// --- HAIR CATEGORY (Male Specific) ---
+	/**
+	 * Extensive options for men's hairstyles, including variations in short cuts, 
+	 * fades, receding/thinning descriptions, and longer styles.
+	 */
+	"Hair": {
+	  	// A comprehensive list of typical male hairstyles, including contemporary trends 
+		// and classic cuts, as well as descriptions for hair loss.
+	  	"Hair Style": ["Short cut","Buzz cut","Slicked back","Curly short","Pompadour","Undercut","Crew cut","Man bun","Fade","Afro","Shaggy cut","Side-swept","Bald","Partially bald (top)","Receding hairline","Thinning hair","Bald with side hair","Close shave","Military cut","Top knot","Messy casual","Wet look","Long straight","Long wavy","Curly medium length","Dreadlocks","Cornrows","Faux Hawk","Ivy League","High and Tight","Disconnected Undercut","Caesar Cut","Textured Crop","Mullet","Spiky Hair","Curly Top Fade","Slicked Side Part","Flat Top","Bowl Cut"],
+	  	// An exhaustive list of hair colors, covering natural, typical highlights, and fashion colors.
+	  	"Hair Color": ["Dark Blonde","Blonde","Light Blonde","Platinum Blonde","Brown","Light Brown","Dark Brown","Black","Jet Black","Gray","Silver/White","Salt and Pepper","Auburn","Chestnut","Red","Copper","Ginger","Golden Brown","Ash Brown","Honey Blonde","Caramel","Bronze","Pastel Pink","Blue","Green","Purple","Teal","White Blonde","Rose Gold","Burgundy","Silver Gray","Platinum Silver","Matte Black","Ash Gray","Mahogany"],
+	  	// Length options, tailored to common male lengths.
+	  	"Hair Length": ["Very short","Short","Medium","Long","Shoulder length","Medium-Long","Chin-length"],
+	  	// Descriptive terms for the tactile and visual quality of the hair.
+	  	"Hair Texture": ["Straight","Wavy","Curly","Afro","Frizzy","Smooth","Coarse","Fine","Kinky"],
+	  	// Placement and style of the hair separation.
+	  	"Hair Parting": ["Middle part","Side part","No part","Zig-zag part","Slight side part","Deep side part"],
+	  	// Descriptive terms for the fullness and density of the hair.
+	  	"Hair Volume": ["Thin","Medium","Thick","Voluminous","Flat","Full"],
+	  	// Options for common male headwear and hair accessories.
+	  	"Hair Accessories": ["None","Headband","Cap","Beanie","Bandana","Scarf","Hat","Hair clip","Hair tie","Barrette"]
+	},
+
+	// --- FACIAL HAIR CATEGORY (Male Specific) ---
+	/**
+	 * Detailed features covering various beard and mustache styles and density.
+	 */
+	Facial_Hair: {
+		// Comprehensive list of beard styles, from clean-shaven to long/bushy.
+		"Beard Style": ["None","Clean-shaven","Stubble","Light stubble","Medium stubble","Heavy stubble","Goatee","Full beard","Short beard","Long beard","Bushy beard","Trimmed beard","Circle beard","Van Dyke","Anchor beard","Chin strap","Soul patch","Neck beard","Beard with mustache","Braided beard"],
+		// Comprehensive list of mustache styles.
+		"Mustache Style": ["None","Light mustache","Thick mustache","Handlebar mustache","Chevron mustache","Horseshoe mustache","Pencil mustache","Walrus mustache","Lampshade mustache","English mustache","Beard-connected mustache"],
+		// Color options for facial hair, allowing it to differ from head hair.
+		"Facial Hair Color": ["Match hair color","Dark Blonde","Blonde","Light Blonde","Platinum Blonde","Brown","Light Brown","Dark Brown","Black","Jet Black","Gray","Silver/White","Salt and Pepper","Auburn","Chestnut","Red","Copper","Ginger","Golden Brown","Ash Brown","Honey Blonde","Caramel","Bronze","Pastel Pink","Blue","Green","Purple","Teal","White Blonde","Rose Gold","Burgundy","Silver Gray","Platinum Silver","Matte Black","Ash Gray","Mahogany"],
+		// Density options for the beard.
+		"Beard Density": ["Sparse","Medium","Thick","Full","Patchy"]
+	},
+	
+	// --- CLOTHING CATEGORY (Male Specific) ---
+	/**
+	 * Highly detailed clothing options tailored to male fashion, categorized by garment type, 
+	 * color, fabric, and pattern.
+	 */
+	Clothing: {
+		// Variety of upper body garments, from casual tees to formal shirts and various jackets.
+	  	"Top": ["None","T-shirt","Dress Shirt","Casual Shirt","Sweater","Jacket","Blazer","Hoodie","Tank top","Polo shirt","Vest","Cardigan","Turtleneck","Sport Coat","Henley Shirt","Work Shirt","Rugby Shirt","Graphic Tee","Puffer Vest","Bomber Jacket","Shirt Jacket","Sweatshirt","Zip-up Hoodie","Windbreaker","Thermal Shirt","Denim Shirt"],
+	  	// Variety of lower body garments, focusing on different fits of jeans, trousers, and shorts.
+	  	"Bottom": ["Jeans (Straight)","Jeans (Slim Fit)","Jeans (Tapered)","Jeans (Bootcut)","Trousers (Tailored)","Dress Pants (Slacks)","Chinos","Cargo Pants","Corduroy Pants","Linen Pants","Athletic Shorts","Casual Shorts","Bermuda Shorts","Swim Trunks","Joggers","Sweatpants","Work Pants","Hiking Pants","Swim Brief","Swim Brief Sporty cut","Track Pants","Khaki Shorts","Pleated Pants","Slim Fit Pants"],
+	  	// Color options for the upper garment.
+	  	"Top Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],
+	  	// Fabric and material options for the upper garment.
+	  	"Top Fabric": ["Cotton","Linen","Wool","Denim","Leather","Polyester","Knitted","Silk","Flannel","Fleece","Canvas","Velvet","Chambray","Synthetic Blend"],
+	  	// Pattern options for the upper garment.
+	  	"Top Pattern": ["Solid", "Striped", "Plaid", "Checkered", "Geometric", "Abstract", "Camouflage", "Floral", "Polka dot", "Animal print", "Tie-dye", "Houndstooth", "Chevron", "Paisley", "Pinstripe", "Gingham", "Ikot", "Ethnic print", "Patchwork", "Tartan", "Herringbone", "Seersucker", "Lace", "Tapestry", "Millefleur", "Argyll", "Toile de Jouy"],
+	  	// Color options for the lower garment.
+	  	"Bottom Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],
+	  	// Fabric and material options for the lower garment.
+	  	"Bottom Fabric": ["Denim","Cotton","Linen","Wool","Polyester","Leather","Corduroy","Twill","Synthetic Blend","Sweatshirt Fabric"],
+	  	// Pattern options for the lower garment.
+	  	"Bottom Pattern": ["Solid", "Striped", "Plaid", "Checkered", "Geometric", "Abstract", "Camouflage", "Floral", "Polka dot", "Animal print", "Tie-dye", "Houndstooth", "Chevron", "Paisley", "Pinstripe", "Gingham", "Ikot", "Ethnic print", "Patchwork", "Tartan", "Herringbone", "Seersucker", "Lace", "Tapestry", "Millefleur", "Argyll", "Toile de Jouy"],
+	  	// Variety of footwear options, covering formal, workwear, and casual styles.
+	  	"Shoes": ["Sneakers","Boots","Formal shoes","Sandals","Barefoot","Loafers","Oxfords","Derby shoes","Chelsea Boots","Chukka Boots","Monk Strap Shoes","Espadrilles","Slip-ons","Dress Sneakers","Work Boots","Hiking Boots"],
+	  	// Color options for footwear.
+	  	"Shoes Color": ["Black","Brown","White","Gray","Navy","Beige","Tan","Metallic silver","Metallic gold","Burgundy","Olive","Charcoal","Taupe","Cognac"],
+	  	// Material options for footwear.
+	  	"Shoes Material": ["Leather","Suede","Canvas","Synthetic","Patent leather","Rubber","Mesh","Faux Leather","Velvet","Nubuck"],
+	  	// Comprehensive options for coats, jackets, and other outerwear.
+	  	"Outerwear": ["Coat","Overcoat","Trench coat","Puffer jacket","Peacoat","Denim jacket","Leather/Moto jacket","Cardigan","Blazer","Sport Coat","Parka","Anorak","Bomber jacket","Windbreaker","Vest","Gilet","Field Jacket","Raincoat","Hooded Jacket","Quilted Jacket","Shearling Jacket","Faux Fur Coat","Cape Coat","Overcoat Longline"],
+	  	// Color options for the outerwear.
+	  	"Outerwear Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],	  
+	  	// One-piece garments and formal suiting options.
+	  	"Jumpsuit": ["Business Suit","Formal Tuxedo","Three-Piece Suit","Sport Coat/Trousers Combo","Overall (Workwear)","Coveralls","Jumpsuit (Fashion/Casual)","Utility Jumpsuit","Denim Jumpsuit"],	
+	  	// Color options for suiting/jumpsuits.
+	  	"Jumpsuit Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],		  
+	  	// General outfit style/context, offering high-level stylistic guidance.
+	  	"Outfit": ["Casual outfit","Business suit","Sporty outfit","Formal tuxedo","Summer outfit","Winter outfit","Smart casual","Streetwear","Loungewear","Business casual","Preppy look","Layered outfit","Festival look","Vintage outfit","Athleisure","Workwear","Red carpet look"],
+	 	// Options for brand inspiration, explicitly including the instruction "without brand stamp" 
+		// to adhere to content generation guidelines (avoiding unauthorized brand logos). 
+		// Includes a mix of high-street, luxury, and streetwear brands.
+	  	"Brand inspired by": ["Zara Man without brand stamp", "H&M Men without brand stamp", "Uniqlo Men without brand stamp", "Topman without brand stamp", "Bershka Men without brand stamp", "Pull & Bear Men without brand stamp", "Mango Man without brand stamp", "ASOS Men without brand stamp", "Nike without brand stamp", "Adidas without brand stamp", "Puma without brand stamp", "New Balance without brand stamp", "The North Face without brand stamp", "Patagonia without brand stamp", "Carhartt WIP without brand stamp", "Supreme without brand stamp", "Off-White without brand stamp", "Stüssy without brand stamp", "A Bathing Ape (BAPE) without brand stamp", "Gucci Men without brand stamp", "Prada Men without brand stamp", "Versace Men without brand stamp", "Louis Vuitton Men without brand stamp", "Balenciaga Men without brand stamp", "Saint Laurent Men without brand stamp", "Burberry Men without brand stamp", "Givenchy Men without brand stamp", "Valentino Men without brand stamp", "Tommy Hilfiger without brand stamp", "Ralph Lauren without brand stamp", "Hugo Boss without brand stamp", "Armani without brand stamp", "Stone Island without brand stamp", "Fear of God without brand stamp", "Vetements without brand stamp", "Comme des Garçons without brand stamp", "A.P.C. without brand stamp", "GANT without brand stamp"],
+	 	// A comprehensive list of common male accessories, including formal and casual items.
+	  	"Accessories": ["None","Scarf","Hat","Belt","Watch","Gloves","Sunglasses","Tie","Bowtie","Cufflinks","Pocket Square","Jewelry (Ring/Necklace)","Wallet","Key Chain","Suspenders","Umbrella","Bag (Backpack/Briefcase)","Bracelet","Necklace","Ring","Cap","Beanie","Bandana","Hairband","Crossbody Bag","Messenger Bag"]
+	}
+
+};
+/**
+ * @fileoverview The final consolidated feature map for the Prompt Generator application.
+ * This object merges the common features (like Face, Eyes, Pose) with gender-specific 
+ * overrides or additions (like Hair, Clothing, Makeup/Facial Hair).
+ * The structure ensures that the UI/logic can easily load the correct set of options 
+ * based on whether the user selects 'female' or 'male'.
+ */
+const features = {
+	
+	// --- FEMALE FEATURE SET ---
+	female: {
+		/**
+		 * BASE Category for Female: Merges the universal features (Age, Ethnicity) 
+		 * from `commonBase` with the female-specific additions/modifications 
+		 * (e.g., specific Skin/Complexion additions and the explicit Gender setting).
+		 */
+	  	Base: { ...commonBase, ...femaleSpecific.Base },
+		
+		// Anatomical features shared between genders, sourced from `commonFeatures`.
+	  	Face: commonFeatures.Face,
+	  	Eyes: commonFeatures.Eyes,
+		Nose: commonFeatures.Nose,
+	  	Lips: commonFeatures.Lips,
+		
+		// Hair features specific to the female context (e.g., longer lengths, complex styles).
+	  	Hair: femaleSpecific.Hair,
+		
+		// Dedicated category for makeup, specific to the female set.
+	  	Makeup: femaleSpecific.Makeup,
+		
+		// Body shape and proportion features shared between genders.
+	  	Body: commonFeatures.Body,
+		
+		// Extensive clothing features tailored for female fashion.
+	  	Clothing: femaleSpecific.Clothing,
+		
+		// Emotional and body language expressions (shared).
+		Expression: commonFeatures.Expression,
+		
+		// Posture, position, and activity features (shared).
+		Pose: commonFeatures.Pose,
+		
+		// Image composition and framing features (shared).
+	  	"Prompt Generation": commonFeatures["Prompt Generation"]
+	},
+	
+	// --- MALE FEATURE SET ---
+	male: {
+		/**
+		 * BASE Category for Male: Merges the universal features (Age, Ethnicity) 
+		 * from `commonBase` with the male-specific additions/modifications 
+		 * (primarily the explicit Gender setting).
+		 */
+	  	Base: { ...commonBase, ...maleSpecific.Base },
+		
+		// Anatomical features shared between genders, sourced from `commonFeatures`.
+	  	Face: commonFeatures.Face,
+	  	Eyes: commonFeatures.Eyes,
+		Nose: commonFeatures.Nose,
+	  	Lips: commonFeatures.Lips,
+		
+		// Hair features specific to the male context (e.g., short cuts, fades).
+	  	Hair: maleSpecific.Hair,
+		
+		// Dedicated category for facial hair (beards, mustaches), specific to the male set.
+		"Facial Hair": maleSpecific.Facial_Hair,
+		
+		// Body shape and proportion features shared between genders.
+	  	Body: commonFeatures.Body,
+		
+		// Extensive clothing features tailored for male fashion.
+	  	Clothing: maleSpecific.Clothing,
+		
+		// Emotional and body language expressions (shared).
+		Expression: commonFeatures.Expression,
+		
+		// Posture, position, and activity features (shared).
+		Pose: commonFeatures.Pose,
+		
+		// Image composition and framing features (shared).
+	  	"Prompt Generation": commonFeatures["Prompt Generation"]
+	}
+};
+
+let currentGender = "female";
+let currentCategory = "Base";
+let currentValues = {};
+let lockedFeatures = {};
+let ignoredFeatures = {};
+
+const categoryMenu = document.getElementById('categoryMenu');
+const featuresContainer = document.getElementById('features');
+
+// --- CONSTANTS AND INITIALIZATION ---
+
+// Custom option for color picker override
+const CUSTOM_COLOR_OPTION = "Custom Color (Hex)"; 
+
+function updateCharCounter() {
+    const promptElement = document.getElementById('prompt');
+    const counterElement = document.getElementById('char-counter');
+    
+    if (promptElement && counterElement) {
+        const promptText = promptElement.textContent;
+        counterElement.textContent = `Character Count: ${promptText.length}`;
+    }
+}
+
+// Ensures all features have a value, and handles gender switch
+function initState() {
+  const group = features[currentGender];
+  const allFeatures = {};
+  for (let category in group) {
+    Object.assign(allFeatures, group[category]);
+  }
+
+  for (let feature in allFeatures) {
+    const originalOptions = allFeatures[feature];
+    // Add custom color option to all 'Color' features
+    if (feature.includes("Color") && !originalOptions.includes(CUSTOM_COLOR_OPTION)) {
+        originalOptions.unshift(CUSTOM_COLOR_OPTION);
+    }
+    
+    const defaultOption = originalOptions[originalOptions.length > 0 && originalOptions[0] === CUSTOM_COLOR_OPTION ? 1 : 0]; // Default to the first *non-custom* option
+
+    const currentValue = currentValues[feature];
+    
+    // Check if the current value is still valid for the current gender/feature set
+    const isValueValid = originalOptions.includes(currentValue) || isHexColor(currentValue);
+
+    if (!currentValue || !isValueValid) {
+        
+        let newValue = defaultOption;
+
+        // Custom default assignments
+        if (feature === "Age") {
+            newValue = "Young Adult (20-24)"; 
+        } else if (feature === "Height") {
+            newValue = "Tall"; 
+        } else if (feature === "Abs") {
+            newValue = "Slightly defined"; 
+        } else if (feature === "Leg Length") {
+            newValue = "Long legs"; 
+        } else if (feature === "Arm Length") {
+            newValue = "Long arms"; 
+        } else if (feature === "Waist") {
+            newValue = "Average waist";
+        }
+        
+        if (!originalOptions.includes(newValue) && !isHexColor(newValue)) {
+             newValue = defaultOption;
+        }
+
+        currentValues[feature] = newValue;
+    }
+
+    if (!(feature in lockedFeatures)) lockedFeatures[feature] = false;
+    if (!(feature in ignoredFeatures)) ignoredFeatures[feature] = false;
+  }
+  
+  // Clean up features that no longer exist (e.g., Facial Hair when switching to Female)
+  const featuresToRemove = [];
+  for (let feature in currentValues) {
+      if (!allFeatures[feature]) {
+          featuresToRemove.push(feature);
+      }
+  }
+  featuresToRemove.forEach(feature => {
+      delete currentValues[feature];
+      delete lockedFeatures[feature];
+      delete ignoredFeatures[feature];
+  });
+}
+
+function showToast(message) {
+  let toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 2000);
+}
+
+function renderFeatures() {
+  featuresContainer.innerHTML = "";
+  categoryMenu.innerHTML = "";
+
+  const categories = Object.keys(features[currentGender]);
+  categories.sort((a,b) => a === "Base" ? -1 : (b === "Base" ? 1 : 0));
+
+  const categoryIcons = {
+    Base: 'fa-user',
+    Face: 'fa-face-smile',
+    Eyes: 'fa-eye',
+    Lips: 'fa-lips',
+    Hair: 'fa-ruler',
+    Makeup: 'fa-paint-brush',
+    Body: 'fa-person',
+    Clothing: 'fa-shirt',
+	Expression  : 'fa-face-smile',
+	Pose: 'fa-person-running',
+    "Prompt Generation": 'fa-terminal',
+    "Facial Hair": 'fa-beard'
+  };
+
+	categories.forEach(category => {
+	  const btn = document.createElement('button');
+	  btn.innerHTML = `<i class="fas ${categoryIcons[category] || 'fa-folder'}"></i> ${category}`;
+      if (category === currentCategory) {
+          btn.classList.add('active');
+      }
+	  btn.addEventListener('click', () => {
+		currentCategory = category;   
+		renderFeatures();
+	  });
+	  categoryMenu.appendChild(btn);
+	});
+
+  showCategory(currentCategory);
+}
+
+function updateFeatureRowClasses(feature, row) {
+    row.classList.remove('locked', 'ignored');
+    if (lockedFeatures[feature]) {
+        row.classList.add('locked');
+    }
+    if (ignoredFeatures[feature]) {
+        row.classList.add('ignored');
+    }
+}
+
+
+function showCategory(category) {
+  featuresContainer.innerHTML = "";
+  const group = features[currentGender][category];
+
+  const section = document.createElement('div');
+  section.className = 'category-section';
+
+  const header = document.createElement('h3');
+  header.textContent = category;
+  section.appendChild(header);
+
+  for (let feature in group) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'feature-row';
+    updateFeatureRowClasses(feature, wrapper);
+
+    const label = document.createElement('label');
+    label.textContent = feature;
+    wrapper.appendChild(label); // Append label first
+
+    const selectContainer = document.createElement('div');
+    selectContainer.style.display = 'flex';
+    selectContainer.style.alignItems = 'center';
+    selectContainer.style.gap = '15px';
+    
+    const select = document.createElement('select');
+    select.id = feature;
+    
+    const sortedOptions = sortOptions(feature, group[feature]);
+
+    sortedOptions.forEach((value) => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = value;
+      select.appendChild(option);
+    });
+
+    let isColorFeature = feature.includes("Color");
+    let initialValue = currentValues[feature];
+
+    if (isColorFeature && isHexColor(initialValue)) {
+        // If current value is a hex, select the custom option in the select box
+        select.value = CUSTOM_COLOR_OPTION;
+    } else {
+        // Otherwise, set the value from currentValues (which is a string name)
+        select.value = initialValue;
+    }
+    
+    // --- Color Picker Logic ---
+    let colorPicker;
+    let colorPickerWrapper = document.createElement('div');
+    colorPickerWrapper.className = 'color-picker-container';
+
+    if (isColorFeature) {
+        // 1. Create the Color Picker
+        colorPicker = document.createElement('input');
+        colorPicker.type = "color";
+        colorPicker.className = "color-picker";
+        colorPicker.id = feature + "_colorPicker";
+        
+        // Set initial color picker value (if hex is stored, use it, otherwise use a default visual hint)
+        colorPicker.value = isHexColor(initialValue) ? initialValue : getBaseHex(initialValue);
+        
+        colorPickerWrapper.appendChild(select);
+        colorPickerWrapper.appendChild(colorPicker);
+        
+        wrapper.appendChild(colorPickerWrapper);
+        wrapper.style.gridTemplateColumns = '150px 1fr auto'; // Adjust grid for color picker
+
+        // Event listener for Color Picker
+        colorPicker.addEventListener('input', e => {
+            const hexColor = e.target.value;
+            currentValues[feature] = hexColor; 
+            select.value = CUSTOM_COLOR_OPTION; // Force select box to "Custom Color (Hex)"
+        });
+        
+        // Adjust select change listener for color features
+        select.addEventListener('change', e => {
+            const selectedValue = e.target.value;
+            currentValues[feature] = selectedValue;
+            
+            // If user selects a color name, update color picker visual
+            if (selectedValue !== CUSTOM_COLOR_OPTION) {
+                colorPicker.value = getBaseHex(selectedValue);
+            }
+        });
+        
+    } else {
+        // Not a color feature, just append the select box
+        wrapper.appendChild(select);
+        
+        // Standard change listener for non-color features
+        select.addEventListener('change', e => {
+          currentValues[feature] = e.target.value;
+          if (feature === "Gender") {
+            currentGender = e.target.value.toLowerCase();
+            initState(); 
+            renderFeatures(); 
+          }
+        });
+    }
+    // --- End Color Picker Logic ---
+
+
+    const controls = document.createElement('div');
+    controls.className = 'feature-controls';
+
+    const lockBox = document.createElement('input');
+    lockBox.type = "checkbox";
+    lockBox.id = feature + "_lock";
+    lockBox.checked = lockedFeatures[feature] || false;
+    lockBox.addEventListener('change', e => {
+      lockedFeatures[feature] = e.target.checked;
+      updateFeatureRowClasses(feature, wrapper);
+    });
+
+    const lockLabel = document.createElement('label');
+    lockLabel.textContent = "Lock";
+    lockLabel.htmlFor = lockBox.id;
+
+    const ignoreBox = document.createElement('input');
+    ignoreBox.type = "checkbox";
+    ignoreBox.id = feature + "_ignore";
+    ignoreBox.checked = ignoredFeatures[feature] || false;
+    ignoreBox.addEventListener('change', e => {
+      ignoredFeatures[feature] = e.target.checked;
+      updateFeatureRowClasses(feature, wrapper);
+    });
+
+    const ignoreLabel = document.createElement('label');
+    ignoreLabel.textContent = "Ignore";
+    ignoreLabel.htmlFor = ignoreBox.id;
+
+    
+    controls.appendChild(lockBox);
+    controls.appendChild(lockLabel);
+    controls.appendChild(ignoreBox);
+    controls.appendChild(ignoreLabel);
+    
+    wrapper.appendChild(controls);
+    section.appendChild(wrapper);
+  }
+
+  // ... (Category Actions - Randomize, Lock/Unlock All, Ignore/Unignore All - remain the same)
+  if (category !== "Prompt Generation") {
+    const actions = document.createElement('div');
+    actions.className = 'category-actions';
+
+    const categoryRandomBtn = document.createElement('button');
+    categoryRandomBtn.className = 'btn btn-primary';
+    categoryRandomBtn.innerHTML = '<i class="fas fa-dice"></i> Randomize ' + category;
+    categoryRandomBtn.addEventListener('click', () => {
+      let randomizedCount = 0;
+      for (let feature in group) {
+        if (!lockedFeatures[feature]) {
+          const options = group[feature];
+          const randomIndex = Math.floor(Math.random() * options.length);
+          currentValues[feature] = options[randomIndex];
+          
+          const select = document.getElementById(feature);
+          if (select) {
+              if (feature.includes("Color") && currentValues[feature] === CUSTOM_COLOR_OPTION) {
+                  // If custom color is randomly picked, assign a random hex for completeness
+                  const randomHex = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                  currentValues[feature] = randomHex;
+                  select.value = CUSTOM_COLOR_OPTION;
+                  const colorPicker = document.getElementById(feature + "_colorPicker");
+                  if (colorPicker) colorPicker.value = randomHex;
+
+              } else {
+                  // For non-color features or non-custom color names
+                  select.value = currentValues[feature];
+                  // If color feature, update picker visual based on name (optional)
+                  if (feature.includes("Color")) {
+                      const colorPicker = document.getElementById(feature + "_colorPicker");
+                      if (colorPicker) colorPicker.value = getBaseHex(currentValues[feature]);
+                  }
+              }
+          }
+          randomizedCount++;
+        }
+      }
+      showToast(`Randomized ${randomizedCount} values in ${category} (excluding locked ones).`);
+    });
+    actions.appendChild(categoryRandomBtn);
+    
+    const lockAllBtn = document.createElement('button');
+    lockAllBtn.className = 'btn btn-control';
+    lockAllBtn.innerHTML = '<i class="fas fa-lock"></i> Lock All';
+    lockAllBtn.addEventListener('click', () => {
+      for (let feature in group) {
+        lockedFeatures[feature] = true;
+        const lockBox = document.getElementById(feature + "_lock");
+        const fRow = lockBox ? lockBox.closest('.feature-row') : null;
+        if (lockBox) lockBox.checked = true;
+        if (fRow) updateFeatureRowClasses(feature, fRow);
+      }
+      showToast(`Locked all features in ${category}`);
+    });
+
+    const unlockAllBtn = document.createElement('button');
+    unlockAllBtn.className = 'btn btn-control';
+    unlockAllBtn.innerHTML = '<i class="fas fa-unlock"></i> Unlock All';
+    unlockAllBtn.addEventListener('click', () => {
+      for (let feature in group) {
+        lockedFeatures[feature] = false;
+        const lockBox = document.getElementById(feature + "_lock");
+        const fRow = lockBox ? lockBox.closest('.feature-row') : null;
+        if (lockBox) lockBox.checked = false;
+        if (fRow) updateFeatureRowClasses(feature, fRow);
+      }
+      showToast(`Unlocked all features in ${category}`);
+    });
+
+    const ignoreAllBtn = document.createElement('button');
+    ignoreAllBtn.className = 'btn btn-control';
+    ignoreAllBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Ignore All';
+    ignoreAllBtn.addEventListener('click', () => {
+      for (let feature in group) {
+        ignoredFeatures[feature] = true;
+        const ignoreBox = document.getElementById(feature + "_ignore");
+        const fRow = ignoreBox ? ignoreBox.closest('.feature-row') : null;
+        if (ignoreBox) ignoreBox.checked = true;
+        if (fRow) updateFeatureRowClasses(feature, fRow);
+      }
+      showToast(`Ignored all features in ${category}`);
+    });
+
+    const unignoreAllBtn = document.createElement('button');
+    unignoreAllBtn.className = 'btn btn-control';
+    unignoreAllBtn.innerHTML = '<i class="fas fa-eye"></i> Unignore All';
+    unignoreAllBtn.addEventListener('click', () => {
+      for (let feature in group) {
+        ignoredFeatures[feature] = false;
+        const ignoreBox = document.getElementById(feature + "_ignore");
+        const fRow = ignoreBox ? ignoreBox.closest('.feature-row') : null;
+        if (ignoreBox) ignoreBox.checked = false;
+        if (fRow) updateFeatureRowClasses(feature, fRow);
+      }
+      showToast(`Unignored all features in ${category}`);
+    });
+
+    actions.appendChild(lockAllBtn);
+    actions.appendChild(unlockAllBtn);
+    actions.appendChild(ignoreAllBtn);
+    actions.appendChild(unignoreAllBtn);
+    section.appendChild(actions);
+  } 
+  else {
+    
+    const updateGlobalState = (type, state, message) => {
+        const allGroup = features[currentGender];
+        for (let category in allGroup) {
+            for (let feature in allGroup[category]) {
+                if (type === 'lock') {
+                    lockedFeatures[feature] = state;
+                    const checkbox = document.getElementById(feature + "_lock");
+                    const fRow = checkbox ? checkbox.closest('.feature-row') : null;
+                    if (checkbox) checkbox.checked = state;
+                    if (fRow) updateFeatureRowClasses(feature, fRow); 
+                } else if (type === 'ignore') {
+                    ignoredFeatures[feature] = state;
+                    const checkbox = document.getElementById(feature + "_ignore");
+                    const fRow = checkbox ? checkbox.closest('.feature-row') : null;
+                    if (checkbox) checkbox.checked = state;
+                    if (fRow) updateFeatureRowClasses(feature, fRow);
+                }
+            }
+        }
+        showToast(message);
+    };
+
+    const globalActions = document.createElement('div');
+    globalActions.className = 'global-actions';
+    
+    const h4 = document.createElement('h4');
+    h4.innerHTML = '<i class="fas fa-globe"></i> Global Feature Controls';
+    globalActions.appendChild(h4);
+
+    const globalLockBtn = document.createElement('button');
+    globalLockBtn.className = 'btn btn-control';
+    globalLockBtn.innerHTML = '<i class="fas fa-lock"></i> Lock All';
+    globalLockBtn.addEventListener('click', () => updateGlobalState('lock', true, 'Globally locked all features.'));
+
+    const globalUnlockBtn = document.createElement('button');
+    globalUnlockBtn.className = 'btn btn-control';
+    globalUnlockBtn.innerHTML = '<i class="fas fa-unlock"></i> Unlock All';
+    globalUnlockBtn.addEventListener('click', () => updateGlobalState('lock', false, 'Globally unlocked all features.'));
+
+    const globalIgnoreBtn = document.createElement('button');
+    globalIgnoreBtn.className = 'btn btn-control';
+    globalIgnoreBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Ignore All';
+    globalIgnoreBtn.addEventListener('click', () => updateGlobalState('ignore', true, 'Globally ignored all features.'));
+
+    const globalUnignoreBtn = document.createElement('button');
+    globalUnignoreBtn.className = 'btn btn-control';
+    globalUnignoreBtn.innerHTML = '<i class="fas fa-eye"></i> Unignore All';
+    globalUnignoreBtn.addEventListener('click', () => updateGlobalState('ignore', false, 'Globally unignored all features.'));
+
+    globalActions.appendChild(globalLockBtn);
+    globalActions.appendChild(globalUnlockBtn);
+    globalActions.appendChild(globalIgnoreBtn);
+    globalActions.appendChild(globalUnignoreBtn);
+    section.appendChild(globalActions);
+
+    const otherActions = document.createElement('div');
+    otherActions.className = 'prompt-actions';
+
+    const randomBtn = document.createElement('button');
+    randomBtn.className = 'btn btn-primary';
+    randomBtn.innerHTML = '<i class="fas fa-dice"></i> Random Selection (All)';
+    randomBtn.addEventListener('click', () => {
+      const allGroup = features[currentGender];
+      let randomizedCount = 0;
+      for (let category in allGroup) {
+        for (let feature in allGroup[category]) {
+          if (!lockedFeatures[feature]) {
+            const options = allGroup[category][feature];
+            const randomIndex = Math.floor(Math.random() * options.length);
+            const selectedValue = options[randomIndex];
+            
+            // Handle color feature randomization
+            if (feature.includes("Color") && selectedValue === CUSTOM_COLOR_OPTION) {
+                // If Custom Color is randomly selected, generate a random hex
+                const randomHex = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                currentValues[feature] = randomHex;
+                const colorPicker = document.getElementById(feature + "_colorPicker");
+                if (colorPicker) colorPicker.value = randomHex;
+            } else {
+                currentValues[feature] = selectedValue;
+                // If color feature, update picker visual based on name (optional)
+                if (feature.includes("Color")) {
+                    const colorPicker = document.getElementById(feature + "_colorPicker");
+                    if (colorPicker) colorPicker.value = getBaseHex(selectedValue);
+                }
+            }
+            
+            const select = document.getElementById(feature);
+            if (select) {
+                // Set the select box value correctly
+                select.value = feature.includes("Color") && isHexColor(currentValues[feature]) ? CUSTOM_COLOR_OPTION : currentValues[feature];
+            }
+            randomizedCount++;
+          }
+        }
+      }
+      showToast(`Randomized ${randomizedCount} values (excluding locked ones).`);
+    });
+
+    const generateInitialBtn = document.createElement('button');
+    generateInitialBtn.className = 'btn btn-primary';
+    generateInitialBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Initial Prompt';
+    generateInitialBtn.addEventListener('click', () => {
+      let gender = currentValues["Gender"] || "Female";
+      
+      let prompt = (gender === "Female") 
+          ? "Create an image of a woman standing on an absolute pure white background. "
+          : "Create an image of a man standing on an absolute pure white background. ";
+
+      const parts = [];
+      const allGroup = features[currentGender];
+      for (let category in allGroup) {
+          for (let feature in allGroup[category]) {
+              if (feature === "Gender") continue;
+              if (!ignoredFeatures[feature]) {
+                const value = currentValues[feature];
+                // Use the stored value directly, which can be a color name or a hex code
+                parts.push(`${feature}: ${value}`);
+              }
+          }
+      }
+      
+      prompt += parts.join(", ") + ". High-resolution, professional studio lighting, 8k, photorealistic.";
+      document.getElementById('prompt').textContent = prompt;
+      showToast('Initial Prompt Generated');
+      updateCharCounter();
+    });
+
+    const generateModificationBtn = document.createElement('button');
+    generateModificationBtn.className = 'btn btn-primary';
+    generateModificationBtn.innerHTML = '<i class="fas fa-pen-to-square"></i> Generate Modification Prompt';
+    generateModificationBtn.addEventListener('click', () => {
+      const allFeaturesPrompt = [];
+      const allGroup = features[currentGender];
+      let hasContent = false;
+      let gender = currentValues["Gender"] || "Female";
+
+      for (let category in allGroup) {
+          for (let feature in allGroup[category]) {
+              if (feature === "Gender") continue;
+
+              if (ignoredFeatures[feature]) {
+                  continue;
+              }
+
+              hasContent = true;
+              
+              const value = currentValues[feature];
+              // Use the stored value directly, which can be a color name or a hex code
+              allFeaturesPrompt.push(`${feature}: ${value}`);
+          }
+      }
+
+      let prompt = "";
+      
+      if (!hasContent) {
+          prompt = (gender === "Female") 
+            ? "No features included in the prompt for the woman. All are either locked or ignored."
+            : "No features included in the prompt for the man. All are either locked or ignored.";
+      } else {
+        
+        prompt = (gender === "Female") 
+            ? "Change the image of the woman, set to: "
+            : "Change the image of the man, set to: ";
+        
+        prompt += allFeaturesPrompt.join(", ") + ".";
+
+      }
+      
+      document.getElementById('prompt').textContent = prompt.trim();
+      showToast('Modification Prompt Generated');
+      updateCharCounter();
+    });
+    
+    const copyPromptBtn = document.createElement('button');
+    copyPromptBtn.className = 'btn btn-secondary';
+    copyPromptBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Prompt';
+    copyPromptBtn.addEventListener('click', () => {
+      const promptText = document.getElementById('prompt').textContent;
+      if (promptText && promptText !== 'Generated Prompt will appear here...') {
+        navigator.clipboard.writeText(promptText).then(() => {
+          showToast('Prompt copied!');
+        }).catch(() => {
+          showToast('Failed to copy prompt.');
+        });
+      } else {
+        showToast('No prompt to copy.');
+      }
+    });
+
+    const exportJsonBtn = document.createElement('button');
+    exportJsonBtn.className = 'btn btn-secondary';
+    exportJsonBtn.innerHTML = '<i class="fas fa-file-download"></i> Export JSON';
+    exportJsonBtn.addEventListener('click', () => {
+      const data = {
+        currentGender,
+        currentValues,
+        lockedFeatures,
+        ignoredFeatures
+      };
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+
+	  const genderValue = currentValues["Gender"] || currentGender;
+	  const skinValue = currentValues["Skin / Complexion"] || "UnspecifiedSkin"; 
+	  
+	  const cleanGender = genderValue.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+	  const cleanSkin = skinValue.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+	  
+	  const now = new Date();
+	  const dateString = now.getFullYear() + '-' + 
+	  				String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+	  				String(now.getDate()).padStart(2, '0');
+	  
+	  const newFilename = `${cleanGender}_${cleanSkin}_${dateString}.json`;
+	  
+	  a.download = newFilename;	  
+
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Settings exported.');
+    });
+
+    const importJsonBtn = document.createElement('button');
+    importJsonBtn.className = 'btn btn-secondary';
+    importJsonBtn.innerHTML = '<i class="fas fa-file-upload"></i> Import JSON';
+    importJsonBtn.addEventListener('click', () => {
+      document.getElementById('importJsonInput').click();
+    });
+    
+    otherActions.appendChild(randomBtn);
+    otherActions.appendChild(generateInitialBtn);
+    otherActions.appendChild(generateModificationBtn);
+    otherActions.appendChild(copyPromptBtn);
+    otherActions.appendChild(exportJsonBtn);
+    otherActions.appendChild(importJsonBtn);
+    
+    const importJsonInput = document.createElement('input');
+    importJsonInput.type = "file";
+    importJsonInput.id = "importJsonInput";
+    importJsonInput.accept = ".json";
+    importJsonInput.style.display = "none";
+    importJsonInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.currentGender) currentGender = data.currentGender.toLowerCase();
+          if (data.currentValues) currentValues = data.currentValues;
+          if (data.lockedFeatures) lockedFeatures = data.lockedFeatures;
+          if (data.ignoredFeatures) ignoredFeatures = data.ignoredFeatures;
+          initState(); 
+          renderFeatures();
+          showToast('Settings imported successfully.');
+        } catch (err) {
+          alert("Invalid JSON file.");
+        }
+      };
+      reader.readAsText(file);
+    });
+    otherActions.appendChild(importJsonInput);
+
+
+    const promptContainerDiv = document.createElement('div');
+    promptContainerDiv.id = 'prompt-container';
+
+    const promptDiv = document.createElement('div');
+    promptDiv.id = 'prompt';
+    promptDiv.textContent = 'Generated Prompt will appear here...';
+
+    const charCounterDiv = document.createElement('div');
+    charCounterDiv.id = 'char-counter';
+    charCounterDiv.textContent = 'Character Count: 37';
+
+    promptContainerDiv.appendChild(promptDiv);
+    promptContainerDiv.appendChild(charCounterDiv);
+
+
+    const dropZone = document.createElement('div');
+    dropZone.className = 'drop-zone';
+    dropZone.id = 'dropZone';
+    dropZone.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Drag and drop JSON file here or click to upload';
+    dropZone.addEventListener('click', () => importJsonBtn.click());
+    dropZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file && file.type === 'application/json') {
+        const fileList = new DataTransfer();
+        fileList.items.add(file);
+        document.getElementById('importJsonInput').files = fileList.files;
+        document.getElementById('importJsonInput').dispatchEvent(new Event('change'));
+      } else {
+        showToast('Please drop a .json file.');
+      }
+    });
+
+    section.appendChild(otherActions);
+    section.appendChild(promptContainerDiv);
+    section.appendChild(dropZone);
+    
+    updateCharCounter();
+  }
+
+  featuresContainer.appendChild(section);
+}
+
+initState();
+renderFeatures();
+</script>
+</body>
+</html>

@@ -305,6 +305,56 @@
   .toast.show {
     opacity: 1;
   }
+
+/* --- Responsive Styles for Mobile/Tablet (Max Width 800px) --- */
+  @media (max-width: 800px) {
+    body {
+      padding: 10px; 
+    }
+
+    .container {
+      flex-direction: column; 
+      gap: 15px;
+      padding: 15px;
+    }
+
+    .sidebar {
+      width: 100%; 
+      padding-right: 0;
+      border-right: none; 
+    }
+    
+    .sidebar button {
+        padding: 10px;
+        font-size: 0.95em;
+    }
+
+    .feature-row {
+      grid-template-columns: 1fr; 
+      gap: 5px;
+      padding: 10px;
+    }
+    
+    .color-picker-container {
+      width: 100%;
+      justify-content: space-between;
+    }
+    
+    h2 {
+        font-size: 1.5em;
+        margin-bottom: 15px;
+    }
+    
+    .btn {
+        padding: 8px 15px;
+        font-size: 0.85em;
+    }
+    
+    .category-actions, .prompt-actions, .global-actions {
+        flex-direction: column; /* Στοίβαξη των κουμπιών δράσης */
+        gap: 8px;
+    }
+  }  	
 </style>
 </head>
 <body>

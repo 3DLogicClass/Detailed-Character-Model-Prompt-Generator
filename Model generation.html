@@ -305,7 +305,7 @@
   .toast.show {
     opacity: 1;
   }
-
+  
 /* --- Responsive Styles for Mobile/Tablet (Max Width 800px) --- */
   @media (max-width: 800px) {
     body {
@@ -354,7 +354,7 @@
         flex-direction: column; /* Στοίβαξη των κουμπιών δράσης */
         gap: 8px;
     }
-  }  	
+  }  
 </style>
 </head>
 <body>
@@ -885,13 +885,24 @@ const femaleSpecific = {
 		"Outerwear": ["Coat","Trench coat","Puffer jacket","Peacoat","Denim jacket","Leather/Moto jacket","Cardigan","Blazer","Cape","Poncho","Parka","Anorak","Bomber jacket","Windbreaker","Vest","Gilet","Duster coat","Shrug","Raincoat","Faux Fur Coat","Shearling Jacket","Quilted Jacket","Hooded Coat","Peplum Jacket","Cropped Jacket","Longline Coat","Wrap Coat","Tailcoat","Kimono Jacket","Capelet","Blouson Jacket","Utility Jacket","Trucker Jacket","Field Jacket","Overcoat","Chesterfield Coat"],
 
 		// Color options for the outerwear.
-		"Outerwear Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],	
+		"Outerwear Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],
+
+		// Fabric and material options for the Outerwear garment.
+		"Outerwear Fabric": ["Denim","Cotton","Linen","Wool","Polyester","Leather","Corduroy","Velvet","Spandex","Faux Leather","Denim Stretch","Tulle","Jersey","Chiffon","Suede","Silk","Satin","Knitted"],
+		// Pattern options for the Outerwear garment.
+		"Outerwear Pattern": ["Solid", "Striped", "Plaid", "Checkered", "Geometric", "Abstract", "Camouflage", "Floral", "Polka dot", "Animal print", "Tie-dye", "Houndstooth", "Chevron", "Paisley", "Pinstripe", "Gingham", "Ikot", "Ethnic print", "Patchwork", "Tartan", "Herringbone", "Seersucker", "Lace", "Tapestry", "Millefleur", "Argyll", "Toile de Jouy"],		
 		
 		// One-piece garments, including various dress styles, gowns, jumpsuits, and rompers.
 		"Dress Jumpsuit": ["Maxi dress","Midi dress","Mini dress","Sheath dress","A-line dress","Sundress","Jumpsuit","Romper","Overall","Wrap dress","Shift dress","Bodycon dress","Mermaid dress","Ball gown","Evening gown","Cocktail dress","Tea-length dress","Peplum dress","Tunic dress","Shirt dress","Kaftan","Slip dress","Halter dress","Off-the-shoulder dress","Tiered dress","Pleated dress","Asymmetrical dress","Empire waist dress","Corset dress","Blazer dress","Pinafore dress","Palazzo jumpsuit","Wide-leg jumpsuit","Utility jumpsuit","Culotte jumpsuit","Sporty romper","Denim romper","Lace dress","Sheer dress","Layered dress"],	
 		
 		// Color options for one-piece garments.
 		"Dress Jumpsuit Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],	
+		
+		
+		// Fabric and material options for the Dress Jumpsuit garment.
+		"Dress Jumpsuit Fabric": ["Denim","Cotton","Linen","Wool","Polyester","Leather","Corduroy","Velvet","Spandex","Faux Leather","Denim Stretch","Tulle","Jersey","Chiffon","Suede","Silk","Satin","Knitted"],
+		// Pattern options for the Dress Jumpsuit garment.
+		"Dress Jumpsuit Pattern": ["Solid", "Striped", "Plaid", "Checkered", "Geometric", "Abstract", "Camouflage", "Floral", "Polka dot", "Animal print", "Tie-dye", "Houndstooth", "Chevron", "Paisley", "Pinstripe", "Gingham", "Ikot", "Ethnic print", "Patchwork", "Tartan", "Herringbone", "Seersucker", "Lace", "Tapestry", "Millefleur", "Argyll", "Toile de Jouy"],			
 
 		// General outfit style/context, offering high-level stylistic guidance.
 		"Outfit": ["Casual outfit","Business suit","Sporty outfit","Formal tuxedo","Summer outfit","Winter outfit","Smart casual","Streetwear","Cocktail dress","Athleisure","Bohemian look","Evening Gown","Wedding dress","Party outfit","Clubwear","Resort wear","Loungewear","Festival outfit","Gothic look","Punk look","Vintage outfit","Retro outfit","Office wear","Casual chic","Formal gown","Red carpet look","Casual layering","Preppy look","Minimalist outfit","Maximalist outfit","Layered outfit","Elegant evening wear","Country casual","Beachwear","Casual blazer look","Designer fashion","Avant-garde fashion","Statement outfit"],
@@ -990,11 +1001,19 @@ const maleSpecific = {
 	  	// Comprehensive options for coats, jackets, and other outerwear.
 	  	"Outerwear": ["Coat","Overcoat","Trench coat","Puffer jacket","Peacoat","Denim jacket","Leather/Moto jacket","Cardigan","Blazer","Sport Coat","Parka","Anorak","Bomber jacket","Windbreaker","Vest","Gilet","Field Jacket","Raincoat","Hooded Jacket","Quilted Jacket","Shearling Jacket","Faux Fur Coat","Cape Coat","Overcoat Longline"],
 	  	// Color options for the outerwear.
-	  	"Outerwear Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],	  
+	  	"Outerwear Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],	
+		 // Fabric and material options for the Outerwear garment.
+	  	"Outerwear Fabric": ["Denim","Cotton","Linen","Wool","Polyester","Leather","Corduroy","Twill","Synthetic Blend","Sweatshirt Fabric"],
+	  	// Pattern options for the Outerwear garment.
+	  	"Outerwear Pattern": ["Solid", "Striped", "Plaid", "Checkered", "Geometric", "Abstract", "Camouflage", "Floral", "Polka dot", "Animal print", "Tie-dye", "Houndstooth", "Chevron", "Paisley", "Pinstripe", "Gingham", "Ikot", "Ethnic print", "Patchwork", "Tartan", "Herringbone", "Seersucker", "Lace", "Tapestry", "Millefleur", "Argyll", "Toile de Jouy"],  
 	  	// One-piece garments and formal suiting options.
 	  	"Jumpsuit": ["Business Suit","Formal Tuxedo","Three-Piece Suit","Sport Coat/Trousers Combo","Overall (Workwear)","Coveralls","Jumpsuit (Fashion/Casual)","Utility Jumpsuit","Denim Jumpsuit"],	
 	  	// Color options for suiting/jumpsuits.
-	  	"Jumpsuit Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],		  
+	  	"Jumpsuit Color": ["Black","White","Gray","Navy blue","Light blue","Denim blue","Turquoise","Teal", "Olive","Olive green","Green", "Beige","Cream","Champagne", "Brown","Khaki","Copper", "Red","Burgundy","Maroon", "Coral","Orange","Mustard","Peach", "Hot pink","Fuchsia", "Lilac","Lavender","Mint green","Pastel shades","Pastel tones", "Metallic Gold","Rose Gold","Metallic Silver","Plum"],	
+		// Fabric and material options for the Jumpsuit garment.
+	  	"Jumpsuit Fabric": ["Denim","Cotton","Linen","Wool","Polyester","Leather","Corduroy","Twill","Synthetic Blend","Sweatshirt Fabric"],
+	  	// Pattern options for the Jumpsuit garment.
+	  	"Jumpsuit Pattern": ["Solid", "Striped", "Plaid", "Checkered", "Geometric", "Abstract", "Camouflage", "Floral", "Polka dot", "Animal print", "Tie-dye", "Houndstooth", "Chevron", "Paisley", "Pinstripe", "Gingham", "Ikot", "Ethnic print", "Patchwork", "Tartan", "Herringbone", "Seersucker", "Lace", "Tapestry", "Millefleur", "Argyll", "Toile de Jouy"], 	  
 	  	// General outfit style/context, offering high-level stylistic guidance.
 	  	"Outfit": ["Casual outfit","Business suit","Sporty outfit","Formal tuxedo","Summer outfit","Winter outfit","Smart casual","Streetwear","Loungewear","Business casual","Preppy look","Layered outfit","Festival look","Vintage outfit","Athleisure","Workwear","Red carpet look"],
 	 	// Options for brand inspiration, explicitly including the instruction "without brand stamp" 

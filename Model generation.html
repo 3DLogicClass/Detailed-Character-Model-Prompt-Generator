@@ -7,7 +7,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Detailed Character & Model Prompt Generator</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
+  /*
+   * This CSS block defines the visual presentation and layout for the Prompt Generator application.
+   * It uses a modern, clean, and responsive design approach for enhanced user experience (UX).
+   */
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f0f2f5;
@@ -40,6 +45,7 @@
     padding-right: 20px;
     border-right: 1px solid #e5e7eb;
   }
+  /* Style for all category buttons within the sidebar. */
   .sidebar button {
     display: flex;
     align-items: center;
@@ -59,6 +65,7 @@
   .sidebar button:hover {
     background: #e5e7eb;
   }
+  /* Active state for the currently selected category. */
   .sidebar button.active {
     background: #3b82f6;
     color: #ffffff;
@@ -138,11 +145,13 @@
   }
 
   /* --- Color Picker Styling --- */
+  /* Ensures the color picker aligns with the feature controls */
   .color-picker-container {
       display: flex;
       align-items: center;
       gap: 10px;
   }
+  /* Core styling for the HTML color input element. */
   .color-picker {
     width: 40px; 
     height: 40px; 
@@ -170,10 +179,12 @@
   }
   /* --- End Color Picker Styling --- */
 
+  /* Visual cue for features marked as 'Locked' and excluded from randomization/reset. */
   .feature-row.locked {
       background-color: #fffbeb;
       border-left: 4px solid #f59e0b;
   }
+  /* Visual cue for features marked as 'Ignored' and excluded from the final prompt string. */
   .feature-row.ignored {
       opacity: 0.5;
       border-left: 4px solid #ef4444;
@@ -182,6 +193,7 @@
       accent-color: #f59e0b;
   }
 
+  /* Styling for control button groups. */
   .category-actions, .prompt-actions, .global-actions {
     display: flex;
     flex-wrap: wrap;
@@ -204,6 +216,7 @@
       color: #1e3a8a;
   }
 
+  /* General button styling. */
   .btn {
     padding: 10px 18px;
     border: none;
@@ -307,6 +320,7 @@
   }
   
 /* --- Responsive Styles for Mobile/Tablet (Max Width 800px) --- */
+/* Media query to ensure optimal layout on smaller screens (mobile/tablet). */
   @media (max-width: 800px) {
     body {
       padding: 10px; 
@@ -351,7 +365,7 @@
     }
     
     .category-actions, .prompt-actions, .global-actions {
-        flex-direction: column; /* Στοίβαξη των κουμπιών δράσης */
+        flex-direction: column; /* Stacks action buttons vertically for better mobile usability. */
         gap: 8px;
     }
   }  
@@ -380,23 +394,26 @@
 		
 		</div>
 	</div>
-
+    
 <div id="toast" class="toast"></div>
+
+<script src="Presets/data.js"></script>
 
 <script>
 /**
  * @fileoverview Detailed Character & Model Prompt Generator
  * * This application is a web-based tool designed to facilitate the creation of complex,
  * structured text prompts for AI image generation models (e.g., Stable Diffusion, Midjourney).
- * * It allows users to select detailed visual attributes across multiple categories 
+ * It allows users to select detailed visual attributes across multiple categories 
  * (such as Face, Body, Hair, Clothing, Environment, and Lighting) from a predefined 
  * data structure, 'commonFeatures'.
- * * The core functionalities include:
- * 1. Dynamic UI generation: Creating category menus and feature selectors based on the data.
+ * * @section Core_Functionalities
+ * The core functionalities include:
+ * 1. Dynamic UI generation: Creating category menus and feature selectors based on the data models.
  * 2. Real-time Prompt Aggregation: Collecting user selections to construct a comprehensive
- * and weighted text prompt for the AI model.
- * 3. Color Management: Utility functions to handle and convert color inputs.
- * 4. Configuration Persistence: Functionality for saving and loading custom prompts via JSON files.
+ * and weighted text prompt for the AI model, critical for consistency.
+ * 3. Color Management: Utility functions to handle and convert color inputs (hex to name mapping).
+ * 4. Configuration Persistence: Functionality for saving and loading custom prompt configurations via JSON files.
  * * @author 3D Logic Class 
  * @version 1.0.0
  * @since 2025-10-29
@@ -425,7 +442,8 @@
 
 /**
  * @fileoverview Utility functions for feature sorting, color validation, and default color mapping 
- * within the Prompt Generator application.
+ * within the Prompt Generator application. These functions support the main application logic 
+ * by ensuring data consistency and predictable UI behavior.
  */
 
 // --- Feature Sorting and Ordering ---
@@ -433,8 +451,8 @@
 /**
  * @constant {string[]} specialSortFeatures 
  * List of feature names that require a specific, non-alphabetical sort order. 
- * This is crucial for maintaining a logical flow in the UI (e.g., Age/Height should appear 
- * in a predefined list order, not sorted alphabetically like "Medium" then "Small" then "Large").
+ * This is crucial for maintaining a logical flow in the UI (e.g., Age/Height/Length options must appear 
+ * in a predefined list order, rather than a purely alphabetical sort).
  */
 const specialSortFeatures = [
     "Age", "Height", "Hair Length", "Hair Volume", "Lip Size", "Eye Size", "Image Type"
@@ -442,8 +460,8 @@ const specialSortFeatures = [
 
 /**
  * Sorts the options array for a given feature.
- * Features listed in `specialSortFeatures` retain their original definition order.
- * All other features are sorted alphabetically for consistency.
+ * Features listed in `specialSortFeatures` retain their original definition order (chronological/logical).
+ * All other features are sorted alphabetically to ensure a consistent and predictable interface.
  * * @param {string} featureName - The name of the feature (e.g., "Hair Style").
  * @param {string[]} options - The array of possible values for the feature.
  * @returns {string[]} The sorted or original array of options.
@@ -462,8 +480,8 @@ function sortOptions(featureName, options) {
 
 /**
  * Validates if a string is a valid hexadecimal color code (e.g., #RRGGBB or #RGB).
- * This is used to distinguish between a stored color name (like "Red") and a custom
- * color hex code when loading or processing feature values.
+ * This utility is vital for differentiating between a user-selected color *name* (e.g., "Red") 
+ * and a custom *hex code* when processing data for the final prompt generation.
  * * @param {string} str - The string to test.
  * @returns {boolean} True if the string matches the hex color pattern, false otherwise.
  */
@@ -473,12 +491,10 @@ function isHexColor(str) {
 }
 
 /**
- * Provides a basic, representative hex code for a given color name.
- * This is primarily used to set the visual color of the `<input type="color">` picker 
- * when the user selects a non-custom color *name* from the dropdown list.
- * * NOTE: This is a basic implementation and maps only a few common colors. It attempts
- * to extract the first word of multi-word names (e.g., 'Light Blue' -> 'Light' -> 'White' (Default))
- * for a fallback mechanism.
+ * Provides a basic, representative hex code for a given color name string.
+ * This is used to set the visual color of the `<input type="color">` picker 
+ * when the user selects a non-custom color *name* from the dropdown list,
+ * offering an immediate visual approximation of the selected color.
  * * @param {string} colorName - The name of the color (e.g., "Deep Red", "Light Blonde").
  * @returns {string} The corresponding base hex color code. Defaults to '#ffffff' if no match is found.
  */
@@ -487,12 +503,11 @@ function getBaseHex(colorName) {
     const defaultColors = {
         'Black': '#000000', 'White': '#ffffff', 'Red': '#ff0000', 'Blue': '#0000ff',
         'Green': '#008000', 'Brown': '#a52a2a', 'Yellow': '#ffff00', 'Pink': '#ffc0cb',
-        'Gray': '#808080', 'Default': '#ffffff' // Default white/visible
+        'Gray': '#808080', 'Default': '#ffffff' // Default white/visible for safety
     };
     
-    // Extract the first word of the color name and capitalize it to match keys in defaultColors.
-    // E.g., 'Light Blue' becomes 'Light', 'Dark Blonde' becomes 'Dark'.
-    // This is a crude heuristic to try and find a sensible default.
+    // Extracts the first capitalized word from the color name (e.g., 'Light Blue' -> 'Light') 
+    // for a crude heuristic match against the base colors.
     const baseColor = colorName.split(' ')[0].replace(/[^a-zA-Z]/g, '');
     
     // Return the specific base color or the 'Default' hex code if not found.
@@ -503,73 +518,77 @@ function getBaseHex(colorName) {
  * @fileoverview Configuration object defining the complete set of features and their
  * available options used for generating detailed character or model prompts.
  * * The structure is: Category -> Feature Name -> Array of Options.
- * This organization facilitates dynamic UI generation and structured prompt creation.
+ * This organization facilitates dynamic UI generation and structured prompt creation 
+ * by logically grouping related visual attributes.
  */
 const commonFeatures = {
 	
 	// --- FACE CATEGORY ---
 	/**
-	 * Features related to the overall structure and components of the head and upper body, 
-	 * excluding specific eye/nose/lip details.
+	 * This category defines all features related to the character's craniofacial structure.
+	 * These details are essential for fine-tuning the base anatomical model for the AI, ensuring
+	 * consistency in character identity and appearance across multiple generated images.
 	 */
 	Face: {
-	  	// Defines the various anatomical shapes of the face.
-	  	"Face Shape": ["Oval","Round","Square","Heart-shaped","Diamond-shaped","Rectangular","Triangular","Long","Short","Pear-shaped","Oblong","Angular","Soft"],
-	  	// Describes the characteristics of the forehead area.
-	  	"Forehead": ["High","Low","Wide","Narrow","Average","Sloped","Flat","Rounded"],
-	  	// Features describing the prominence and shape of the cheekbones.
-	  	"Cheekbones": ["High","Prominent","Soft","Flat","Average","Angular","Wide","Narrow","Rosy"],
-	  	// Options for describing ear size and how they are positioned relative to the head.
-	  	"Ears": ["Small","Average","Protruding","Close to head","Rounded","Pointed","Attached lobes","Detached lobes"],
-	  	// Options for the appearance and length of the neck.
-	  	"Neck": ["Long","Short","Slim","Thick","Average","Muscular","Graceful","Sturdy"],
-	  	// Characteristics defining the jawline's angle and width.
-	  	"Jawline": ["Sharp","Soft","Angular","Rounded","Wide","Narrow"],
-	  	// Different shapes and defining characteristics of the chin.
-	  	"Chin": ["Pointed","Rounded","Square","Cleft","Receded"],
-	  	// Specifies the presence and depth of wrinkles for character aging/detail.
-      	"Wrinkles": ["None","Light","Moderate","Deep","Crow's feet","Smile lines"]
+	  	// Defines the various anatomical shapes of the face, critical for character recognition.
+	  	"Face Shape": ["Oval","Round","Square","Heart-shaped","Diamond-shaped","Rectangular","Triangular","Long","Short","Pear-shaped","Oblong","Angular","Soft"],
+	  	// Describes the characteristics of the forehead area, contributing to the overall facial profile.
+	  	"Forehead": ["High","Low","Wide","Narrow","Average","Sloped","Flat","Rounded"],
+	  	// Features describing the prominence and shape of the cheekbones, highly influential in defining age and perceived attractiveness/structure.
+	  	"Cheekbones": ["High","Prominent","Soft","Flat","Average","Angular","Wide","Narrow","Rosy"],
+	  	// Options for describing ear size and how they are positioned relative to the head. Usually low-priority but necessary for specific character details (e.g., exposed ears).
+	  	"Ears": ["Small","Average","Protruding","Close to head","Rounded","Pointed","Attached lobes","Detached lobes"],
+	  	// Options for the appearance and length of the neck, crucial for defining overall grace, strength, or body proportion.
+	  	"Neck": ["Long","Short","Slim","Thick","Average","Muscular","Graceful","Sturdy"],
+	  	// Characteristics defining the jawline's angle and width, a key feature in defining gender and facial structure sharpness.
+	  	"Jawline": ["Sharp","Soft","Angular","Rounded","Wide","Narrow"],
+	  	// Different shapes and defining characteristics of the chin.
+	  	"Chin": ["Pointed","Rounded","Square","Cleft","Receded"],
+	  	// Specifies the presence and depth of wrinkles for character aging/detail. This is a primary mechanism for age modification in the prompt.
+      	"Wrinkles": ["None","Light","Moderate","Deep","Crow's feet","Smile lines"]
 	},
 
 	// --- EYES CATEGORY ---
 	/**
-	 * Detailed features focusing specifically on the eyes and surrounding orbital area.
+	 * Detailed features focusing specifically on the eyes and surrounding orbital area. 
+	 * The eyes are often the focal point of a portrait, so high-detail descriptions are critical.
 	 */
 	Eyes: {
-	  	// The outline or form of the eye (e.g., genetic or structural appearance).
-	  	"Eye Shape": ["Almond-shaped", "Round", "Deep-set", "Hooded", "Monolid", "Upturned", "Downturned", "Wide-set", "Close-set", "Protruding"],
-	  	// Standard color options for the iris.
-	  	"Eye Color": ["Brown", "Brown Light", "Brown Dark", "Brown Honey", "Brown Chocolate", "Hazel", "Amber", "Black", "Blue", "Blue Light", "Blue Dark", "Blue Ice", "Blue Turquoise", "Green", "Green Pale", "Green Sea", "Green Olive", "Gray", "Gray Light", "Gray Dark"],
-	  	// Describes the length, volume, and style of the eyelashes.
-	  	"Eyelashes": ["Short", "Long", "Thick", "Sparse", "Curled", "Straight", "Natural", "Colored", "False lashes", "Eyelash extensions"],
-	  	// Describes the appearance and grooming of the eyebrows.
-	  	"Eyebrows": [ "Thin", "Thick", "Arched", "Straight", "Bushy", "Flat", "High-arched", "Unibrow", "Natural", "Well-groomed", "Drawn", "Tattooed", "Microbladed"],
-	  	// Relative size of the eyes in the face (one of the "special sort" features).
-	  	"Eye Size": ["Small", "Medium"],
-	  	// Specific details of the skin under the eye.
-	  	"Under-eye Detail": ["None", "Light dark circles", "Pronounced dark circles", "Eye bags", "Slight puffiness", "Tired look"],
-	  	// Describes the visual texture and patterns within the iris (the colored part).
-	  	"Iris Detail": ["Smooth iris", "Ringed iris", "Starburst pattern", "Speckled pattern", "High-contrast iris", "Soft gradient iris"],
-	  	// Describes the tint or color of the sclera (the white part of the eye).
-	  	"Sclera Tint": ["Bright white", "Slightly off-white", "Reddish tint", "Bluish tint", "Veiny sclera"],
-	  	// Focused options for eyebrow density.
-	  	"Eyebrow Thickness": ["Sparse", "Medium density", "Thick"],
-	  	// Specifies if the eyes are perfectly symmetric.
-	  	"Eye Asymmetry": ["Perfect symmetry", "Slight asymmetry"]	  
+	  	// The outline or form of the eye (e.g., genetic or structural appearance). Essential for East Asian features (Monolid) vs. Western (Almond/Round).
+	  	"Eye Shape": ["Almond-shaped", "Round", "Deep-set", "Hooded", "Monolid", "Upturned", "Downturned", "Wide-set", "Close-set", "Protruding"],
+	  	// Standard color options for the iris. The AI model translates these names into specific color values.
+	  	"Eye Color": ["Brown", "Brown Light", "Brown Dark", "Brown Honey", "Brown Chocolate", "Hazel", "Amber", "Black", "Blue", "Blue Light", "Blue Dark", "Blue Ice", "Blue Turquoise", "Green", "Green Pale", "Green Sea", "Green Olive", "Gray", "Gray Light", "Gray Dark"],
+	  	// Describes the length, volume, and style of the eyelashes. Used in close-up shots for model detail.
+	  	"Eyelashes": ["Short", "Long", "Thick", "Sparse", "Curled", "Straight", "Natural", "Colored", "False lashes", "Eyelash extensions"],
+	  	// Describes the appearance and grooming of the eyebrows. Highly important for facial expression and character mood.
+	  	"Eyebrows": [ "Thin", "Thick", "Arched", "Straight", "Bushy", "Flat", "High-arched", "Unibrow", "Natural", "Well-groomed", "Drawn", "Tattooed", "Microbladed"],
+	  	// Relative size of the eyes in the face (one of the "special sort" features).
+	  	"Eye Size": ["Small", "Medium"],
+	  	// Specific details of the skin under the eye, used to convey fatigue or specific lighting effects (e.g., dark circles).
+	  	"Under-eye Detail": ["None", "Light dark circles", "Pronounced dark circles", "Eye bags", "Slight puffiness", "Tired look"],
+	  	// Describes the visual texture and patterns within the iris (the colored part). High-detail feature for photorealism.
+	  	"Iris Detail": ["Smooth iris", "Ringed iris", "Starburst pattern", "Speckled pattern", "High-contrast iris", "Soft gradient iris"],
+	  	// Describes the tint or color of the sclera (the white part of the eye). Used to influence perceived health or add fantasy elements.
+	  	"Sclera Tint": ["Bright white", "Slightly off-white", "Reddish tint", "Bluish tint", "Veiny sclera"],
+	  	// Focused options for eyebrow density, useful for distinct character designs.
+	  	"Eyebrow Thickness": ["Sparse", "Medium density", "Thick"],
+	  	// Specifies if the eyes are perfectly symmetric. Used to introduce natural imperfections for realism.
+	  	"Eye Asymmetry": ["Perfect symmetry", "Slight asymmetry"]	  
 	},
 
 	// --- NOSE CATEGORY ---
 	/**
 	 * Features describing the structure and specific attributes of the nose.
+	 * Nose shape significantly influences ethnic appearance and overall facial harmony.
 	 */
 	Nose: {
 		// General classification of the nose's profile and overall form.
-		"Nose Shape": ["Straight", "Aquiline (Roman)", "Upturned (Button/Pixie)", "Broad / Wide", "Narrow / Slim", "Celestial (Small, slightly curved)", "Nubian (Long, broad base)"], 
+		"Nose Shape": ["Straight", "Aquiline (Roman)", "Upturned (Button/Pixie)", "Broad / Wide", "Narrow / Slim", "Celestial (Small, slightly curved)", "Nubian (Long, broad base)"], 
 		// Prominence and defining characteristics of the nasal structure.
-		"Nose Feature": ["Prominent", "Delicate / Subtle", "Rounded Tip", "Pointed Tip", "High Bridge", "Low Bridge", "With a slight bump (Dorsal Hump)"], 
+		"Nose Feature": ["Prominent", "Delicate / Subtle", "Rounded Tip", "Pointed Tip", "High Bridge", "Low Bridge", "With a slight bump (Dorsal Hump)"], 
 		// Relative size of the nose.
 		"Nose Size": ["Small", "Medium", "Large"],
-		// The outline and spread of the nostrils.
+		// The outline and spread of the nostrils, contributing to breath-related visual details.
 		"Nostril Shape": ["Narrow", "Wide", "Rounded", "Flared", "Small"],
 		// Describes the profile of the nasal bridge.
 		"Nose Bridge Shape": ["Straight bridge", "Convex bridge", "Concave bridge", "Flat bridge", "High bridge", "Low bridge"],
@@ -577,51 +596,53 @@ const commonFeatures = {
 		"Nose Tip Definition": ["Rounded tip", "Pointed tip", "Bulbous tip", "Flat tip", "Drooping tip", "Upturned tip"],
 		// Width of the nose where it meets the face.
 		"Nose Base Width": ["Narrow base", "Medium width base", "Wide base"],
-		// Specifies if the nose is perfectly symmetric.
+		// Specifies if the nose is perfectly symmetric. Used to introduce natural imperfections for realism.
 		"Nose Symmetry": ["Perfect symmetry", "Slight asymmetry"]
 	},	
 
 	// --- LIPS CATEGORY ---
 	/**
 	 * Features detailing the shape, size, and texture of the mouth and lips.
+	 * Highly mutable features often affected by makeup and emotional expression.
 	 */
 	Lips: {
-	  	// The outline or form of the lips.
-	  	"Lip Shape": ["Full","Thin","Bow-shaped","Heart-shaped","Round","Wide","Uneven","Downturned","Upturned","Cupid's bow pronounced","Flat","Protruding"],
-	  	// Relative size of the lips (one of the "special sort" features).
-	  	"Lip Size": ["Small","Medium","Large","Very small","Average"],
-	  	// How clearly the lip borders and cupid's bow are defined.
-	  	"Lip Definition": ["Well-defined","Soft","Sharp cupid's bow","Undefined","Subtle","Pronounced","Rounded","Angular"],
-	  	// Describes the surface quality and fullness of the lips.
-	  	"Lip Texture": ["Smooth","Dry","Glossy","Matte","Natural","Chapped","Plump","Soft","Velvety"],
-	  	// The direction of the mouth corners when the face is neutral.
-	  	"Lip Corner Direction": ["Neutral corners", "Upturned corners", "Downturned corners", "Slight smile corners"],
-	  	// Specifies if the lips are perfectly symmetric.
-	  	"Lip Symmetry": ["Perfect symmetry", "Slight asymmetry"],
-      	// How much of the teeth are visible when the mouth is relaxed.
-      	"Teeth Visibility": ["Closed lips", "Subtle teeth visible", "Teeth showing"]	  
+	  	// The outline or form of the lips. Defines the mouth's silhouette.
+	  	"Lip Shape": ["Full","Thin","Bow-shaped","Heart-shaped","Round","Wide","Uneven","Downturned","Upturned","Cupid's bow pronounced","Flat","Protruding"],
+	  	// Relative size of the lips (one of the "special sort" features).
+	  	"Lip Size": ["Small","Medium","Large","Very small","Average"],
+	  	// How clearly the lip borders and cupid's bow are defined. Impacts makeup application appearance.
+	  	"Lip Definition": ["Well-defined","Soft","Sharp cupid's bow","Undefined","Subtle","Pronounced","Rounded","Angular"],
+	  	// Describes the surface quality and fullness of the lips. Used to specify texture (e.g., Glossy, Matte).
+	  	"Lip Texture": ["Smooth","Dry","Glossy","Matte","Natural","Chapped","Plump","Soft","Velvety"],
+	  	// The direction of the mouth corners when the face is neutral. Influences the character's resting face expression.
+	  	"Lip Corner Direction": ["Neutral corners", "Upturned corners", "Downturned corners", "Slight smile corners"],
+	  	// Specifies if the lips are perfectly symmetric. Used to introduce natural imperfections for realism.
+	  	"Lip Symmetry": ["Perfect symmetry", "Slight asymmetry"],
+      	// How much of the teeth are visible when the mouth is relaxed.
+      	"Teeth Visibility": ["Closed lips", "Subtle teeth visible", "Teeth showing"]	  
 	},
 
 	// --- BODY CATEGORY ---
 	/**
 	 * Features covering the general physique, proportions, and muscle structure.
+	 * This is the primary category for defining the character's physical build.
 	 */
 	Body: {
-    	// General classifications based on weight and overall build.
+    	// General classifications based on weight and overall build (BMI/Somatotype approximation).
     	"Body Type": [ "Extremely Slim", "Slim", "Fit", "Athletic", "Average", "Curvy", "Plus-size", "Fat", "Extremely Fat", "Obese", "Extremely Obese" ],
-    	// Geometric descriptions of the body's silhouette.
+    	// Geometric descriptions of the body's silhouette (e.g., Hourglass, Rectangle).
     	"Body Shape": [ "Hourglass", "Pear-shaped", "Inverted Triangle", "Rectangle", "Oval", "Diamond", "Round", "Straight", "V-shape" ],
     	// Relative height (one of the "special sort" features).
     	"Height": [ "Very Short", "Short", "Medium", "Tall", "Very Tall" ],
-    	// Description of how the person holds themselves.
+    	// Description of how the person holds themselves. Influences mood and dynamic posing.
     	"Posture": [ "Relaxed", "Straight", "Elegant", "Confident", "Slouched", "Stooped", "Dynamic", "Rigid" ],
     	// Definition level of the abdominal muscles.
     	"Abs": [ "None", "Slightly defined", "Defined", "Very defined / six-pack", "Chiseled", "Soft" ],
-    	// Relative length of the legs.
+    	// Relative length of the legs, critical for fashion and full-body shots.
     	"Leg Length": [ "Short legs", "Average legs", "Long legs", "Very long legs" ],
     	// Relative length of the arms.
     	"Arm Length": [ "Short arms", "Average arms", "Long arms", "Very long arms" ],
-    	// Describes the midsection circumference.
+    	// Describes the midsection circumference, defining the waistline.
     	"Waist": [ "Small waist", "Narrow waist", "Average waist", "Wide waist", "Thick waist" ],
     	// Descriptions for the shape, size, and firmness of the hips and glutes.
     	"Hips / Glutes": [ "Flat", "Slightly Curved", "Average", "Curvy", "Full", "Voluptuous", "Round", "Wide", "Athletic", "Pear-shaped", "Hourglass", "Muscular", "Firm", "Drooping" ],
@@ -631,19 +652,19 @@ const commonFeatures = {
     	"Shoulders / Arms": [ "Narrow", "Average", "Broad", "Muscular", "Toned", "Slender", "Defined", "Stocky", "Rounded", "Angular", "Sloping" ],
     	// Descriptions for the chest and bust area.
     	"Chest / Bust": [ "Flat", "Small", "Slight", "Medium", "Average", "Large", "Full", "Rounded", "Prominent", "Muscular", "Athletic" ],
-    	// Descriptions for the back structure.
+    	// Descriptions for the back structure, important for rear-view poses.
     	"Back": [ "Narrow", "Average", "Broad", "Muscular", "Toned", "Slender", "Rounded", "Stocky", "Defined", "Flat" ],
-    	// Specifies where body fat tends to accumulate.
+    	// Specifies where body fat tends to accumulate (fat distribution pattern).
     	"Body Fat Distribution": [ "Upper body concentrated", "Lower body concentrated", "Evenly distributed", "Central (abdomen) concentrated", "Minimal fat" ],
-    	// The level of visible muscle tone and striation.
+    	// The level of visible muscle tone and striation (often used in fitness/action prompts).
     	"Muscle Definition": [ "Low definition", "Soft athletic", "Visible muscle tone", "High definition", "Competition-level definition" ],
-    	// Describes the relationship between the lengths of different body parts.
+    	// Describes the relationship between the lengths of different body parts (e.g., long torso, short legs).
     	"Body Proportion": [ "Long torso", "Short torso", "Long legs dominant", "Balanced proportions" ],
     	// Describes the angle of the shoulders.
     	"Shoulder Slope": [ "Neutral shoulders", "Slightly sloped shoulders", "Strong shoulder slope" ],
-    	// How visible the collarbones are.
+    	// How visible the collarbones are. Influenced by body fat percentage.
     	"Collarbone Visibility": [ "Not visible", "Slightly visible", "Prominent collarbones" ],
-		// Redundant feature (Face Shape is already in 'Face' category) - kept for completeness but needs review in application logic.
+		// Redundant feature (Facial Fullness is part of Face Shape in Face category) - kept for compatibility/extra detail.
     	"Facial Fullness": [ "Very Slim", "Slim", "Fit", "Average", "Curvy", "Plus-size", "Fat", "Extremely Fat", "Obese", "Extremely Obese", "Round", "Square", "Oval", "Heart-shaped", "Diamond-shaped" ],
 		// Descriptions for the shape and build of the legs.
     	"Legs Fullness": [ "Very Slim", "Slim", "Fit", "Average", "Muscular", "Curvy", "Plus-size", "Fat", "Extremely Fat", "Obese", "Extremely Obese", "Long", "Short", "Proportional" ],
@@ -654,43 +675,45 @@ const commonFeatures = {
 	// --- EXPRESSION CATEGORY ---
 	/**
 	 * Features focusing on the character's emotional state and mood.
+	 * Directly influences the facial musculature and overall visual feeling of the image.
 	 */
 	Expression: {
-	  	// Detailed list of emotions or moods expressed through the face.
-	  	"Facial Expression": ["Happy","Joyful","Smiling","Sad","Tearful","Angry","Furious","Surprised","Shocked","Neutral","Pensive","Confused","Excited","Bored","Flirty","Seductive","Fierce","Skeptical","Winking","Grinning","Smirking","Laughter","Thoughtful","Anxious","Embarrassed","Shy","Smug","Curious","Disgusted","Fearful","Sleepy","Relaxed","Determined","Confident","Mischievous","Nervous","Relieved","Frustrated","Astonished","Pouty","Suspicious","Overjoyed"],
-	  	// Detailed list of emotions or moods expressed through body language.
-		// NOTE: Currently duplicates the Facial Expression list for simplicity, but conceptually distinct.
-	  	"Body Expression": ["Happy","Joyful","Smiling","Sad","Tearful","Angry","Furious","Surprised","Shocked","Neutral","Pensive","Confused","Excited","Bored","Flirty","Seductive","Fierce","Skeptical","Winking","Grinning","Smirking","Laughter","Thoughtful","Anxious","Embarrassed","Shy","Smug","Curious","Disgusted","Fearful","Sleepy","Relaxed","Determined","Confident","Mischievous","Nervous","Relieved","Frustrated","Astonished","Pouty","Suspicious","Overjoyed"]
-	}, 
+	  	// Detailed list of emotions or moods expressed through the face.
+	  	"Facial Expression": ["Happy","Joyful","Smiling","Sad","Tearful","Angry","Furious","Surprised","Shocked","Neutral","Pensive","Confused","Excited","Bored","Flirty","Seductive","Fierce","Skeptical","Winking","Grinning","Smirking","Laughter","Thoughtful","Anxious","Embarrassed","Shy","Smug","Curious","Disgusted","Fearful","Sleepy","Relaxed","Determined","Confident","Mischievous","Nervous","Relieved","Frustrated","Astonished","Pouty","Suspicious","Overjoyed"],
+	  	// Detailed list of emotions or moods expressed through body language. (Conceptual extension of Facial Expression).
+	  	"Body Expression": ["Happy","Joyful","Smiling","Sad","Tearful","Angry","Furious","Surprised","Shocked","Neutral","Pensive","Confused","Excited","Bored","Flirty","Seductive","Fierce","Skeptical","Winking","Grinning","Smirking","Laughter","Thoughtful","Anxious","Embarrassed","Shy","Smug","Curious","Disgusted","Fearful","Sleepy","Relaxed","Determined","Confident","Mischievous","Nervous","Relieved","Frustrated","Astonished","Pouty","Suspicious","Overjoyed"]
+	}, 
 
 	// --- POSE CATEGORY ---
 	/**
 	 * Features describing the posture, style, and activity of the subject.
+	 * Crucial for defining the scene and the interaction of the character with the environment.
 	 */
 	"Pose": {
-	  	// General stylistic context of the pose (e.g., for a photoshoot or a scene).
-	  	"Pose Style":["Fashion Editorial","Casual Lifestyle","Action/Dynamic","Minimalist","Dramatic","Athletic/Fitness","Street Style","Editorial Avant-garde","Relaxed/Home","Formal/Business","Romantic/Cinematic","Dance/Performance","Yoga/Pilates","Sport/Competition","Theatrical/Character","Editorial Concept","Lifestyle Storytelling","Candid/Realistic","Silhouette/Abstract","Playful/Whimsical"],
-	  	// Describes the overall position of the body.
-	  	"Body Position":["Standing","Sitting","Sitting on chair","Lying Down","Leaning","Crouching/Kneeling","Walking","Running","Dancing","Jumping","Reclining","Stretching","Squatting","Balancing","Twisting","Reaching","Stretching arms","Cross-legged","Side Lunge","Backbend","Handstand","Bridge","Split","Crawling","Carrying Object","Bent Over"],
-	  	// Specific placement and action of the hands and arms.
-	  	"Hand/Arm Placement":["Hands on Hips","Hands in Pockets","Arms Crossed","Hand Touching Face","Hand Touching Hair","Arms Relaxed at Sides","Holding an Object","Hands Raised","Resting Head on Hand","Hands Behind Back","Hands on Waist","Hands Clasped","Arms Folded Behind Head","Gesture Pointing","Hand on Chin","Hands on Knees","One Arm Up, One Arm Down","Arms Extended Forward","Hands Interlocked","Hands Covering Face","Hands on Shoulders","Hands on Chest"],
-	  	// Specific placement and action of the legs and feet.
-	  	"Leg/Foot Placement":["Legs Together","Legs Apart","One Leg Forward","One Leg Back","Crossed Legs","Kneeling","Lunging","Feet on Tiptoe","Legs Bent","Legs Straight","Legs Relaxed","Standing on One Leg","Foot on Chair/Surface","Legs Folded","Crouched Feet Position"],
-	  	// Describes the angle and orientation of the head and neck.
-	  	"Head/Neck Position":["Head Tilted Forward","Head Tilted Back","Head Tilted Sideways","Chin Up","Chin Down","Looking Up","Looking Down","Looking Sideways","Facing Forward","Head Resting on Hand/Surface","Neck Extended","Neck Relaxed","Head Turned Over Shoulder"],
-	  	// A very detailed list of activities the subject might be engaged in.
-	  	"Activity/Context": [ 
+	  	// General stylistic context of the pose (e.g., for a fashion editorial or a dramatic cinematic shot).
+	  	"Pose Style":["Fashion Editorial","Casual Lifestyle","Action/Dynamic","Minimalist","Dramatic","Athletic/Fitness","Street Style","Editorial Avant-garde","Relaxed/Home","Formal/Business","Romantic/Cinematic","Dance/Performance","Yoga/Pilates","Sport/Competition","Theatrical/Character","Editorial Concept","Lifestyle Storytelling","Candid/Realistic","Silhouette/Abstract","Playful/Whimsical"],
+	  	// Describes the overall position of the body (macro body placement).
+	  	"Body Position":["Standing","Sitting","Sitting on chair","Lying Down","Leaning","Crouching/Kneeling","Walking","Running","Dancing","Jumping","Reclining","Stretching","Squatting","Balancing","Twisting","Reaching","Stretching arms","Cross-legged","Side Lunge","Backbend","Handstand","Bridge","Split","Crawling","Carrying Object","Bent Over"],
+	  	// Specific placement and action of the hands and arms (micro body language).
+	  	"Hand/Arm Placement":["Hands on Hips","Hands in Pockets","Arms Crossed","Hand Touching Face","Hand Touching Hair","Arms Relaxed at Sides","Holding an Object","Hands Raised","Resting Head on Hand","Hands Behind Back","Hands on Waist","Hands Clasped","Arms Folded Behind Head","Gesture Pointing","Hand on Chin","Hands on Knees","One Arm Up, One Arm Down","Arms Extended Forward","Hands Interlocked","Hands Covering Face","Hands on Shoulders","Hands on Chest"],
+	  	// Specific placement and action of the legs and feet. Defines the stability and style of the lower body position.
+	  	"Leg/Foot Placement":["Legs Together","Legs Apart","One Leg Forward","One Leg Back","Crossed Legs","Kneeling","Lunging","Feet on Tiptoe","Legs Bent","Legs Straight","Legs Relaxed","Standing on One Leg","Foot on Chair/Surface","Legs Folded","Crouched Feet Position"],
+	  	// Describes the angle and orientation of the head and neck. Critical for defining character gaze and focus.
+	  	"Head/Neck Position":["Head Tilted Forward","Head Tilted Back","Head Tilted Sideways","Chin Up","Chin Down","Looking Up","Looking Down","Looking Sideways","Facing Forward","Head Resting on Hand/Surface","Neck Extended","Neck Relaxed","Head Turned Over Shoulder"],
+	  	// A very detailed list of activities the subject might be engaged in. This contextualizes the pose within a scene.
+	  	"Activity/Context": [ 
 			"Taking Selfie", "Reading Book", "Reading Newspaper", "Reading Magazine", "Reading Tablet", "Writing Notes", "Writing Letter", "Typing on Laptop", "Using Desktop Computer", "Talking on Phone", "Video Calling", "Listening to Music", "Cooking", "Baking", "Cutting Vegetables", "Serving Food", "Eating", "Drinking Water", "Drinking Coffee", "Cleaning Window", "Sweeping Floor", "Mopping Floor", "Dusting Shelves", "Washing Dishes", "Doing Laundry", "Folding Clothes", "Carrying Groceries", "Shopping", "Paying at Store", "Using Tools (DIY)", "Fixing Something", "Painting", "Sketching", "Coloring", "Playing Musical Instrument (Guitar)", "Playing Musical Instrument (Piano)", "Playing Musical Instrument (Violin)", "Filming with Camera", "Taking Photos", "Studying", "Teaching", "Giving Presentation", "Work on Construction", "Driving", "Opening Door", "Locking Door", "Walking Dog", "Feeding Pet", "Playing with Pet", "Gardening", "Watering Plants", "Planting Seeds", "Jogging", "Working Out", "Lifting Weights", "Yoga Practice", "Pilates Exercise", "Cycling", "Playing Basketball", "Playing Soccer", "Playing Tennis", "Swimming (Context)", "Climbing Stairs", "Stretching", "Packing Luggage", "Carrying Luggage", "Checking Map", "Waiting for Bus", "Calling Taxi", "Watching TV", "Gaming with Controller", "Virtual Reality Interaction", "Shopping Online", "Meditating", "Clapping", "Cheering", "Applauding", "Hugging Someone", "Helping Someone Walk", "Holding Baby", "Pushing Stroller", "Celebrating Birthday", "Blowing Candles", "Opening Gift", "Using ATM", "Signing Document", "Handshaking", "Checking Time on Watch", "Adjusting Glasses", "Applying Makeup", "Brushing Teeth", "Combing Hair", "Putting on Jacket", "Wearing Backpack", "Tying Shoelaces", "Taking Out Trash", "Recycling", "Sewing", "Knitting", "Ironing Clothes", "Reading Menu", "Ordering Food", "Taking Notes on Clipboard", "Inspecting Object", "Demonstrating Product", "Bowling", "Throwing Ball", "Catching Ball", "First Aid Assistance", "Police/Traffic Direction", "Construction Site Planning", "Stage Performance (Acting)", "Dance Performance Context", "Magic Trick Gesture" 
-	  	] 	  
+	  	] 	  
 	},
 
 	// --- PROMPT GENERATION CATEGORY ---
 	/**
-	 * Features related to the technical or stylistic aspects of the final image generation.
+	 * Features related to the technical or stylistic aspects of the final image generation,
+	 * independent of the character's physical description. These control the output perspective.
 	 */
 	"Prompt Generation": {
-	  	// Specifies the framing or composition of the image (one of the "special sort" features).
-	  	"Image Type": ["Full Body","Portrait","Headshot","Bust","Close-up","Profile","3/4 View","Back View", "Front View","Side View","Over-the-shoulder","Top-down","Low-angle","High-angle","Dynamic Angle","Action Shot"]
+	  	// Specifies the framing or composition of the image (e.g., Portrait, Full Body). This is a primary prompt modifier.
+	  	"Image Type": ["Full Body from head to ground","Portrait","Headshot","Bust","Close-up","Profile","3/4 View","Back View", "Front View","Side View","Over-the-shoulder","Top-down","Low-angle","High-angle","Dynamic Angle","Action Shot"]
 	}
 
 };
@@ -1109,726 +1132,1274 @@ const features = {
 	}
 };
 
+/**
+ * @fileoverview Application state variables and core utility functions for the Prompt Generator UI.
+ * This section manages the user's current selections, active view, and character count display.
+ */
+
+// --- GLOBAL STATE VARIABLES ---
+
+/**
+ * @global
+ * @type {string}
+ * Tracks the current gender selection, which dictates which gender-specific features 
+ * (e.g., maleSpecific, femaleSpecific) are dynamically loaded and displayed in the UI.
+ * Initialized to "female" by default.
+ */
 let currentGender = "female";
+
+/**
+ * @global
+ * @type {string}
+ * Identifies the currently active category being viewed in the main feature panel (e.g., "Face", "Hair", "Core").
+ * This controls the dynamic rendering of the UI content.
+ * Initialized to "Base" (a conceptual category, often replaced by "Core" in the final application).
+ */
 let currentCategory = "Base";
+
+/**
+ * @global
+ * @type {Object.<string, Object.<string, string>>}
+ * A nested object storing the current selected value for every feature.
+ * Structure: { CategoryName: { FeatureName: SelectedValue } }
+ * This is the primary data source for generating the final AI prompt string.
+ */
 let currentValues = {};
+
+/**
+ * @global
+ * @type {Object.<string, Object.<string, boolean>>}
+ * A nested object storing the "locked" status for features.
+ * Locked features are excluded from global or category-specific randomization and reset actions.
+ * Structure: { CategoryName: { FeatureName: true/false } }
+ */
 let lockedFeatures = {};
+
+/**
+ * @global
+ * @type {Object.<string, Object.<string, boolean>>}
+ * A nested object storing the "ignored" status for features.
+ * Ignored features are excluded from the final generated prompt string, allowing users to
+ * temporarily disable attributes without removing their selection.
+ * Structure: { CategoryName: { FeatureName: true/false } }
+ */
 let ignoredFeatures = {};
 
+// --- UI ELEMENT REFERENCES ---
+
+/**
+ * @constant {HTMLElement}
+ * Reference to the DOM element that serves as the container for the category navigation menu (sidebar).
+ */
 const categoryMenu = document.getElementById('categoryMenu');
+
+/**
+ * @constant {HTMLElement}
+ * Reference to the DOM element that serves as the container for the feature selection controls 
+ * of the currently active category.
+ */
 const featuresContainer = document.getElementById('features');
 
 // --- CONSTANTS AND INITIALIZATION ---
 
-// Custom option for color picker override
+/**
+ * @constant {string} CUSTOM_COLOR_OPTION
+ * A unique string used as an option in color-related feature dropdowns. Selecting this option
+ * signals the need to activate and use the associated HTML color picker input for a specific HEX code,
+ * enabling users to specify values outside the predefined color list.
+ */
 const CUSTOM_COLOR_OPTION = "Custom Color (Hex)"; 
 
+/**
+ * @function updateCharCounter
+ * @description Updates the text content of the character counter display based on the 
+ * current length of the generated prompt string displayed in the `#prompt` element.
+ * This is a critical feedback mechanism for users working with models that have strict token limits.
+ * @returns {void}
+ */
 function updateCharCounter() {
-    const promptElement = document.getElementById('prompt');
-    const counterElement = document.getElementById('char-counter');
-    
-    if (promptElement && counterElement) {
-        const promptText = promptElement.textContent;
-        counterElement.textContent = `Character Count: ${promptText.length}`;
-    }
+    const promptElement = document.getElementById('prompt');
+    const counterElement = document.getElementById('char-counter');
+    
+    // Ensure both necessary DOM elements exist before attempting to access their properties.
+    if (promptElement && counterElement) {
+        // Use textContent to safely retrieve the prompt text, regardless of formatting.
+        const promptText = promptElement.textContent;
+        // Update the counter element with the current length.
+        counterElement.textContent = `Character Count: ${promptText.length}`;
+    }
 }
 
-// Ensures all features have a value, and handles gender switch
+/**
+ * @function initState
+ * @description Initializes or re-initializes the application state, ensuring all features 
+ * (specific to the `currentGender`) have a valid selected value (`currentValues`) and 
+ * default settings for `lockedFeatures` and `ignoredFeatures`. This function is critical 
+ * for handling gender switching, data validation, and state persistence.
+ * @returns {void}
+ */
 function initState() {
-  const group = features[currentGender];
-  const allFeatures = {};
-  for (let category in group) {
-    Object.assign(allFeatures, group[category]);
-  }
-
-  for (let feature in allFeatures) {
-    const originalOptions = allFeatures[feature];
-    // Add custom color option to all 'Color' features
-    if (feature.includes("Color") && !originalOptions.includes(CUSTOM_COLOR_OPTION)) {
-        originalOptions.unshift(CUSTOM_COLOR_OPTION);
-    }
+    // 1. Compile the complete set of features relevant to the current gender.
+    // 'features' is assumed to be a global map containing all feature groups (e.g., features.male, features.female).
+    const group = features[currentGender];
     
-    const defaultOption = originalOptions[originalOptions.length > 0 && originalOptions[0] === CUSTOM_COLOR_OPTION ? 1 : 0]; // Default to the first *non-custom* option
-
-    const currentValue = currentValues[feature];
-    
-    // Check if the current value is still valid for the current gender/feature set
-    const isValueValid = originalOptions.includes(currentValue) || isHexColor(currentValue);
-
-    if (!currentValue || !isValueValid) {
-        
-        let newValue = defaultOption;
-
-        // Custom default assignments
-        if (feature === "Age") {
-            newValue = "Young Adult (20-24)"; 
-        } else if (feature === "Height") {
-            newValue = "Tall"; 
-        } else if (feature === "Abs") {
-            newValue = "Slightly defined"; 
-        } else if (feature === "Leg Length") {
-            newValue = "Long legs"; 
-        } else if (feature === "Arm Length") {
-            newValue = "Long arms"; 
-        } else if (feature === "Waist") {
-            newValue = "Average waist";
-        }
-        
-        if (!originalOptions.includes(newValue) && !isHexColor(newValue)) {
-             newValue = defaultOption;
-        }
-
-        currentValues[feature] = newValue;
+    /** @type {Object.<string, string[]>} A merged object containing all FeatureName: Options[] pairs for the current gender. */
+    const allFeatures = {};
+    for (let category in group) {
+        // Merge features from all categories (e.g., 'Face', 'Body') within the selected gender group.
+        Object.assign(allFeatures, group[category]);
     }
 
-    if (!(feature in lockedFeatures)) lockedFeatures[feature] = false;
-    if (!(feature in ignoredFeatures)) ignoredFeatures[feature] = false;
-  }
-  
-  // Clean up features that no longer exist (e.g., Facial Hair when switching to Female)
-  const featuresToRemove = [];
-  for (let feature in currentValues) {
-      if (!allFeatures[feature]) {
-          featuresToRemove.push(feature);
-      }
-  }
-  featuresToRemove.forEach(feature => {
-      delete currentValues[feature];
-      delete lockedFeatures[feature];
-      delete ignoredFeatures[feature];
-  });
+    // 2. Iterate through all relevant features and ensure state consistency.
+    for (let feature in allFeatures) {
+        const originalOptions = allFeatures[feature];
+        
+        // --- Color Picker Handling ---
+        // Checks if the feature name suggests a color and ensures the custom color option is available.
+        if (feature.includes("Color") && !originalOptions.includes(CUSTOM_COLOR_OPTION)) {
+            // Adds the custom option at the beginning of the array for UI prioritization.
+            originalOptions.unshift(CUSTOM_COLOR_OPTION);
+        }
+        
+        // Determine the non-custom default option. If CUSTOM_COLOR_OPTION is present, default to the second element.
+        const defaultOption = originalOptions[originalOptions.length > 0 && originalOptions[0] === CUSTOM_COLOR_OPTION ? 1 : 0]; // Default to the first *non-custom* option
+
+        const currentValue = currentValues[feature];
+        
+        // Check if the existing value is valid in the newly loaded feature set (important after gender switch).
+        // Also checks if the value is a valid Hex color code, as custom colors are not in `originalOptions`.
+        const isValueValid = originalOptions.includes(currentValue) || isHexColor(currentValue);
+
+        // 3. Initialize or Correct Feature Value.
+        if (!currentValue || !isValueValid) {
+            
+            let newValue = defaultOption;
+
+            // --- Custom Default Assignments (Hardcoded Business Logic) ---
+            // Applies specific, predefined default values for core features if the current value is invalid.
+            if (feature === "Age") {
+                newValue = "Young Adult (20-24)"; 
+            } else if (feature === "Height") {
+                newValue = "Tall"; 
+            } else if (feature === "Abs") {
+                newValue = "Slightly defined"; 
+            } else if (feature === "Leg Length") {
+                newValue = "Long legs"; 
+            } else if (feature === "Arm Length") {
+                newValue = "Long arms"; 
+            } else if (feature === "Waist") {
+                newValue = "Average waist";
+            }
+            // Fallback: If the custom default value is not an actual option (e.g., if the options list changed),
+            // revert to the calculated safe default.
+            if (!originalOptions.includes(newValue) && !isHexColor(newValue)) {
+                 newValue = defaultOption;
+            }
+
+            // Update the global state with the new, validated value.
+            currentValues[feature] = newValue;
+        }
+
+        // 4. Initialize Lock/Ignore Status.
+        // Ensures that every feature exists in the control state objects, defaulting to `false` (unlocked/included).
+        if (!(feature in lockedFeatures)) lockedFeatures[feature] = false;
+        if (!(feature in ignoredFeatures)) ignoredFeatures[feature] = false;
+    }
+    
+    // 5. Clean up stale features.
+    // Removes features from the state objects that are no longer part of the current gender's feature set.
+    // This is crucial for preventing errors when generating prompts after a gender switch (e.g., removing 'Beard Style' when switching to 'Female').
+    const featuresToRemove = [];
+    for (let feature in currentValues) {
+         if (!allFeatures[feature]) {
+             featuresToRemove.push(feature);
+         }
+    }
+    featuresToRemove.forEach(feature => {
+         delete currentValues[feature];
+         delete lockedFeatures[feature];
+         delete ignoredFeatures[feature];
+    });
 }
 
+/**
+ * @function showToast
+ * @description Displays a temporary, non-intrusive notification (toast) to the user
+ * to provide immediate feedback on actions (e.g., successful copy, import, or randomization).
+ * @param {string} message - The message text to be displayed in the toast.
+ * @returns {void}
+ */
 function showToast(message) {
-  let toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => {
-    toast.classList.remove('show');
-  }, 2000);
+    let toast = document.getElementById('toast');
+    // Set the message content.
+    toast.textContent = message;
+    // Show the toast by adding the 'show' class (assumed CSS handles visibility).
+    toast.classList.add('show');
+    // Set a timer to automatically hide the toast after 2 seconds (2000 ms).
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2000);
 }
-
+/**
+ * @function renderFeatures
+ * @description Renders the entire application UI based on the current state: 
+ * 1. Clears and rebuilds the category navigation menu (sidebar).
+ * 2. Sorts categories to prioritize "Base".
+ * 3. Renders the feature buttons with icons and attaches event listeners for switching views.
+ * 4. Calls `showCategory` to display the features for the currently selected category (`currentCategory`).
+ * @returns {void}
+ */
 function renderFeatures() {
-  featuresContainer.innerHTML = "";
-  categoryMenu.innerHTML = "";
+    // Clear the containers for the features panel and the category menu.
+    featuresContainer.innerHTML = "";
+    categoryMenu.innerHTML = "";
 
-  const categories = Object.keys(features[currentGender]);
-  categories.sort((a,b) => a === "Base" ? -1 : (b === "Base" ? 1 : 0));
+    // Retrieve category keys relevant to the currently selected gender.
+    const categories = Object.keys(features[currentGender]);
+    
+    // Sorts the categories array to ensure the "Base" category always appears first,
+    // which is critical for user flow and defining core character attributes initially.
+    categories.sort((a,b) => a === "Base" ? -1 : (b === "Base" ? 1 : 0));
 
-  const categoryIcons = {
-    Base: 'fa-user',
-    Face: 'fa-face-smile',
-    Eyes: 'fa-eye',
-    Lips: 'fa-lips',
-    Hair: 'fa-ruler',
-    Makeup: 'fa-paint-brush',
-    Body: 'fa-person',
-    Clothing: 'fa-shirt',
-	Expression  : 'fa-face-smile',
-	Pose: 'fa-person-running',
-    "Prompt Generation": 'fa-terminal',
-    "Facial Hair": 'fa-beard'
-  };
+    /**
+     * @constant {Object.<string, string>} categoryIcons 
+     * A map linking category names to specific Font Awesome 5/6 icon classes.
+     * This enhances UI/UX by providing visual cues for each feature group.
+     */
+    const categoryIcons = {
+        Base: 'fa-user', // Core/Base character attributes
+        Face: 'fa-face-smile',
+        Eyes: 'fa-eye',
+        Lips: 'fa-lips',
+        Hair: 'fa-ruler', // Using ruler icon to denote hair length/style/volume features
+        Makeup: 'fa-paint-brush',
+        Body: 'fa-person',
+        Clothing: 'fa-shirt',
+        Expression: 'fa-face-smile',
+        Pose: 'fa-person-running',
+        "Prompt Generation": 'fa-terminal', // Technical/model control features
+        "Facial Hair": 'fa-beard' // Gender-specific feature
+    };
 
-	categories.forEach(category => {
-	  const btn = document.createElement('button');
-	  btn.innerHTML = `<i class="fas ${categoryIcons[category] || 'fa-folder'}"></i> ${category}`;
-      if (category === currentCategory) {
-          btn.classList.add('active');
-      }
-	  btn.addEventListener('click', () => {
-		currentCategory = category;   
-		renderFeatures();
-	  });
-	  categoryMenu.appendChild(btn);
-	});
+    // 1. Render Category Buttons (Sidebar Menu)
+    categories.forEach(category => {
+        const btn = document.createElement('button');
+        
+        // Dynamically assign the icon class, falling back to a generic folder icon if not found.
+        btn.innerHTML = `<i class="fas ${categoryIcons[category] || 'fa-folder'}"></i> ${category}`;
+        
+        // Highlight the currently active category button.
+        if (category === currentCategory) {
+            btn.classList.add('active');
+        }
+        
+        // Attach the event listener to handle category switching.
+        btn.addEventListener('click', () => {
+            currentCategory = category;    
+            // Re-render the entire feature set to update the active button and the main panel content.
+            renderFeatures();
+        });
+        
+        categoryMenu.appendChild(btn);
+    });
 
-  showCategory(currentCategory);
+    // 2. Display the Feature Controls for the current category in the main panel.
+    // The implementation of `showCategory` is assumed to handle the content generation for `featuresContainer`.
+    showCategory(currentCategory);
 }
 
+/**
+ * @function updateFeatureRowClasses
+ * @description Updates the visual styling (CSS classes) of a specific feature row based on its
+ * current lock and ignore status, reflecting the state stored in `lockedFeatures` and `ignoredFeatures`.
+ * @param {string} feature - The name of the feature (key in `lockedFeatures`/`ignoredFeatures`).
+ * @param {HTMLElement} row - The DOM element representing the feature's entire row.
+ * @returns {void}
+ */
 function updateFeatureRowClasses(feature, row) {
+    // 1. Remove any existing control-related classes to ensure the state is clean.
     row.classList.remove('locked', 'ignored');
+    
+    // 2. Apply the 'locked' class if the feature is marked as locked.
     if (lockedFeatures[feature]) {
         row.classList.add('locked');
     }
+    
+    // 3. Apply the 'ignored' class if the feature is marked as ignored (excluded from prompt).
     if (ignoredFeatures[feature]) {
         row.classList.add('ignored');
     }
 }
 
-
+/**
+ * @function showCategory
+ * @description Renders the feature selection controls for a single, specific category 
+ * (e.g., "Hair" or "Face") into the main features container. This function handles 
+ * dropdown creation, color picker integration, per-feature state controls (lock/ignore), 
+ * category-specific actions, and global prompt generation utilities.
+ * @param {string} category - The name of the category to display.
+ * @returns {void}
+ */
 function showCategory(category) {
-  featuresContainer.innerHTML = "";
-  const group = features[currentGender][category];
-
-  const section = document.createElement('div');
-  section.className = 'category-section';
-
-  const header = document.createElement('h3');
-  header.textContent = category;
-  section.appendChild(header);
-
-  for (let feature in group) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'feature-row';
-    updateFeatureRowClasses(feature, wrapper);
-
-    const label = document.createElement('label');
-    label.textContent = feature;
-    wrapper.appendChild(label); // Append label first
-
-    const selectContainer = document.createElement('div');
-    selectContainer.style.display = 'flex';
-    selectContainer.style.alignItems = 'center';
-    selectContainer.style.gap = '15px';
+    // Clear previous feature content.
+    featuresContainer.innerHTML = "";
     
-    const select = document.createElement('select');
-    select.id = feature;
-    
-    const sortedOptions = sortOptions(feature, group[feature]);
+    // Retrieve the features and options list for the specified category and current gender.
+    const group = features[currentGender][category];
 
-    sortedOptions.forEach((value) => {
-      const option = document.createElement('option');
-      option.value = value;
-      option.textContent = value;
-      select.appendChild(option);
-    });
+    // Create the main section container and header.
+    const section = document.createElement('div');
+    section.className = 'category-section';
 
-    let isColorFeature = feature.includes("Color");
-    let initialValue = currentValues[feature];
+    const header = document.createElement('h3');
+    header.textContent = category;
+    section.appendChild(header);
 
-    if (isColorFeature && isHexColor(initialValue)) {
-        // If current value is a hex, select the custom option in the select box
-        select.value = CUSTOM_COLOR_OPTION;
-    } else {
-        // Otherwise, set the value from currentValues (which is a string name)
-        select.value = initialValue;
-    }
-    
-    // --- Color Picker Logic ---
-    let colorPicker;
-    let colorPickerWrapper = document.createElement('div');
-    colorPickerWrapper.className = 'color-picker-container';
+    // --- Feature Row Generation Loop ---
+    for (let feature in group) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'feature-row';
+        // Apply lock/ignore CSS classes based on the feature's state.
+        updateFeatureRowClasses(feature, wrapper);
 
-    if (isColorFeature) {
-        // 1. Create the Color Picker
-        colorPicker = document.createElement('input');
-        colorPicker.type = "color";
-        colorPicker.className = "color-picker";
-        colorPicker.id = feature + "_colorPicker";
+        const label = document.createElement('label');
+        label.textContent = feature;
+        wrapper.appendChild(label); 
+
+        // Container for select box and optional color picker/value display.
+        const selectContainer = document.createElement('div');
+        selectContainer.style.display = 'flex';
+        selectContainer.style.alignItems = 'center';
+        selectContainer.style.gap = '15px';
         
-        // Set initial color picker value (if hex is stored, use it, otherwise use a default visual hint)
-        colorPicker.value = isHexColor(initialValue) ? initialValue : getBaseHex(initialValue);
+        const select = document.createElement('select');
+        select.id = feature;
         
-        colorPickerWrapper.appendChild(select);
-        colorPickerWrapper.appendChild(colorPicker);
-        
-        wrapper.appendChild(colorPickerWrapper);
-        wrapper.style.gridTemplateColumns = '150px 1fr auto'; // Adjust grid for color picker
+        const sortedOptions = sortOptions(feature, group[feature]);
 
-        // Event listener for Color Picker
-        colorPicker.addEventListener('input', e => {
-            const hexColor = e.target.value;
-            currentValues[feature] = hexColor; 
-            select.value = CUSTOM_COLOR_OPTION; // Force select box to "Custom Color (Hex)"
+        sortedOptions.forEach((value) => {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = value;
+            select.appendChild(option);
         });
-        
-        // Adjust select change listener for color features
-        select.addEventListener('change', e => {
-            const selectedValue = e.target.value;
-            currentValues[feature] = selectedValue;
-            
-            // If user selects a color name, update color picker visual
-            if (selectedValue !== CUSTOM_COLOR_OPTION) {
-                colorPicker.value = getBaseHex(selectedValue);
-            }
-        });
-        
-    } else {
-        // Not a color feature, just append the select box
-        wrapper.appendChild(select);
-        
-        // Standard change listener for non-color features
-        select.addEventListener('change', e => {
-          currentValues[feature] = e.target.value;
-          if (feature === "Gender") {
-            currentGender = e.target.value.toLowerCase();
-            initState(); 
-            renderFeatures(); 
-          }
-        });
-    }
-    // --- End Color Picker Logic ---
 
+        let isColorFeature = feature.includes("Color");
+        let initialValue = currentValues[feature];
 
-    const controls = document.createElement('div');
-    controls.className = 'feature-controls';
-
-    const lockBox = document.createElement('input');
-    lockBox.type = "checkbox";
-    lockBox.id = feature + "_lock";
-    lockBox.checked = lockedFeatures[feature] || false;
-    lockBox.addEventListener('change', e => {
-      lockedFeatures[feature] = e.target.checked;
-      updateFeatureRowClasses(feature, wrapper);
-    });
-
-    const lockLabel = document.createElement('label');
-    lockLabel.textContent = "Lock";
-    lockLabel.htmlFor = lockBox.id;
-
-    const ignoreBox = document.createElement('input');
-    ignoreBox.type = "checkbox";
-    ignoreBox.id = feature + "_ignore";
-    ignoreBox.checked = ignoredFeatures[feature] || false;
-    ignoreBox.addEventListener('change', e => {
-      ignoredFeatures[feature] = e.target.checked;
-      updateFeatureRowClasses(feature, wrapper);
-    });
-
-    const ignoreLabel = document.createElement('label');
-    ignoreLabel.textContent = "Ignore";
-    ignoreLabel.htmlFor = ignoreBox.id;
-
-    
-    controls.appendChild(lockBox);
-    controls.appendChild(lockLabel);
-    controls.appendChild(ignoreBox);
-    controls.appendChild(ignoreLabel);
-    
-    wrapper.appendChild(controls);
-    section.appendChild(wrapper);
-  }
-
-  // ... (Category Actions - Randomize, Lock/Unlock All, Ignore/Unignore All - remain the same)
-  if (category !== "Prompt Generation") {
-    const actions = document.createElement('div');
-    actions.className = 'category-actions';
-
-    const categoryRandomBtn = document.createElement('button');
-    categoryRandomBtn.className = 'btn btn-primary';
-    categoryRandomBtn.innerHTML = '<i class="fas fa-dice"></i> Randomize ' + category;
-    categoryRandomBtn.addEventListener('click', () => {
-      let randomizedCount = 0;
-      for (let feature in group) {
-        if (!lockedFeatures[feature]) {
-          const options = group[feature];
-          const randomIndex = Math.floor(Math.random() * options.length);
-          currentValues[feature] = options[randomIndex];
-          
-          const select = document.getElementById(feature);
-          if (select) {
-              if (feature.includes("Color") && currentValues[feature] === CUSTOM_COLOR_OPTION) {
-                  // If custom color is randomly picked, assign a random hex for completeness
-                  const randomHex = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-                  currentValues[feature] = randomHex;
-                  select.value = CUSTOM_COLOR_OPTION;
-                  const colorPicker = document.getElementById(feature + "_colorPicker");
-                  if (colorPicker) colorPicker.value = randomHex;
-
-              } else {
-                  // For non-color features or non-custom color names
-                  select.value = currentValues[feature];
-                  // If color feature, update picker visual based on name (optional)
-                  if (feature.includes("Color")) {
-                      const colorPicker = document.getElementById(feature + "_colorPicker");
-                      if (colorPicker) colorPicker.value = getBaseHex(currentValues[feature]);
-                  }
-              }
-          }
-          randomizedCount++;
+        // Set the initial selected value in the dropdown, handling hex colors by selecting the custom option.
+        if (isColorFeature && isHexColor(initialValue)) {
+            select.value = CUSTOM_COLOR_OPTION;
+        } else {
+            select.value = initialValue;
         }
-      }
-      showToast(`Randomized ${randomizedCount} values in ${category} (excluding locked ones).`);
-    });
-    actions.appendChild(categoryRandomBtn);
-    
-    const lockAllBtn = document.createElement('button');
-    lockAllBtn.className = 'btn btn-control';
-    lockAllBtn.innerHTML = '<i class="fas fa-lock"></i> Lock All';
-    lockAllBtn.addEventListener('click', () => {
-      for (let feature in group) {
-        lockedFeatures[feature] = true;
-        const lockBox = document.getElementById(feature + "_lock");
-        const fRow = lockBox ? lockBox.closest('.feature-row') : null;
-        if (lockBox) lockBox.checked = true;
-        if (fRow) updateFeatureRowClasses(feature, fRow);
-      }
-      showToast(`Locked all features in ${category}`);
-    });
+        
+        // --- Color Picker Logic (Repeated from previous turn, maintains integrity) ---
+        let colorPicker;
+        let colorPickerWrapper = document.createElement('div');
+        colorPickerWrapper.className = 'color-picker-container';
 
-    const unlockAllBtn = document.createElement('button');
-    unlockAllBtn.className = 'btn btn-control';
-    unlockAllBtn.innerHTML = '<i class="fas fa-unlock"></i> Unlock All';
-    unlockAllBtn.addEventListener('click', () => {
-      for (let feature in group) {
-        lockedFeatures[feature] = false;
-        const lockBox = document.getElementById(feature + "_lock");
-        const fRow = lockBox ? lockBox.closest('.feature-row') : null;
-        if (lockBox) lockBox.checked = false;
-        if (fRow) updateFeatureRowClasses(feature, fRow);
-      }
-      showToast(`Unlocked all features in ${category}`);
-    });
+        if (isColorFeature) {
+            colorPicker = document.createElement('input');
+            colorPicker.type = "color";
+            colorPicker.className = "color-picker";
+            colorPicker.id = feature + "_colorPicker";
+            
+            colorPicker.value = isHexColor(initialValue) ? initialValue : getBaseHex(initialValue);
+            
+            colorPickerWrapper.appendChild(select);
+            colorPickerWrapper.appendChild(colorPicker);
+            
+            wrapper.appendChild(colorPickerWrapper);
+            wrapper.style.gridTemplateColumns = '150px 1fr auto'; 
 
-    const ignoreAllBtn = document.createElement('button');
-    ignoreAllBtn.className = 'btn btn-control';
-    ignoreAllBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Ignore All';
-    ignoreAllBtn.addEventListener('click', () => {
-      for (let feature in group) {
-        ignoredFeatures[feature] = true;
-        const ignoreBox = document.getElementById(feature + "_ignore");
-        const fRow = ignoreBox ? ignoreBox.closest('.feature-row') : null;
-        if (ignoreBox) ignoreBox.checked = true;
-        if (fRow) updateFeatureRowClasses(feature, fRow);
-      }
-      showToast(`Ignored all features in ${category}`);
-    });
+            // Event listener for Color Picker (updates state with HEX, forces select to custom option).
+            colorPicker.addEventListener('input', e => {
+                const hexColor = e.target.value;
+                currentValues[feature] = hexColor; 
+                select.value = CUSTOM_COLOR_OPTION;
+            });
+            
+            // Adjust select change listener for color features (updates state with name, updates picker visual).
+            select.addEventListener('change', e => {
+                const selectedValue = e.target.value;
+                currentValues[feature] = selectedValue;
+                if (selectedValue !== CUSTOM_COLOR_OPTION) {
+                    colorPicker.value = getBaseHex(selectedValue);
+                }
+            });
+            
+        } else {
+            // Not a color feature, just append the select box.
+            wrapper.appendChild(select);
+            
+            // Standard change listener for non-color features.
+            select.addEventListener('change', e => {
+                currentValues[feature] = e.target.value;
+                // Special case: If Gender is changed, re-initialize state and re-render UI.
+                if (feature === "Gender") {
+                    currentGender = e.target.value.toLowerCase();
+                    initState(); 
+                    renderFeatures(); 
+                }
+            });
+        }
+        // --- End Color Picker Logic ---
 
-    const unignoreAllBtn = document.createElement('button');
-    unignoreAllBtn.className = 'btn btn-control';
-    unignoreAllBtn.innerHTML = '<i class="fas fa-eye"></i> Unignore All';
-    unignoreAllBtn.addEventListener('click', () => {
-      for (let feature in group) {
-        ignoredFeatures[feature] = false;
-        const ignoreBox = document.getElementById(feature + "_ignore");
-        const fRow = ignoreBox ? ignoreBox.closest('.feature-row') : null;
-        if (ignoreBox) ignoreBox.checked = false;
-        if (fRow) updateFeatureRowClasses(feature, fRow);
-      }
-      showToast(`Unignored all features in ${category}`);
-    });
 
-    actions.appendChild(lockAllBtn);
-    actions.appendChild(unlockAllBtn);
-    actions.appendChild(ignoreAllBtn);
-    actions.appendChild(unignoreAllBtn);
-    section.appendChild(actions);
-  } 
-  else {
-    
-    const updateGlobalState = (type, state, message) => {
-        const allGroup = features[currentGender];
-        for (let category in allGroup) {
-            for (let feature in allGroup[category]) {
-                if (type === 'lock') {
-                    lockedFeatures[feature] = state;
-                    const checkbox = document.getElementById(feature + "_lock");
+        // --- Feature Control Checkboxes (Lock/Ignore) ---
+        const controls = document.createElement('div');
+        controls.className = 'feature-controls';
+
+        // Lock Checkbox
+        const lockBox = document.createElement('input');
+        lockBox.type = "checkbox";
+        lockBox.id = feature + "_lock";
+        lockBox.checked = lockedFeatures[feature] || false;
+        lockBox.addEventListener('change', e => {
+            lockedFeatures[feature] = e.target.checked;
+            // Update wrapper class immediately to provide visual feedback (e.g., dimming).
+            updateFeatureRowClasses(feature, wrapper);
+        });
+
+        const lockLabel = document.createElement('label');
+        lockLabel.textContent = "Lock";
+        lockLabel.htmlFor = lockBox.id;
+
+        // Ignore Checkbox
+        const ignoreBox = document.createElement('input');
+        ignoreBox.type = "checkbox";
+        ignoreBox.id = feature + "_ignore";
+        ignoreBox.checked = ignoredFeatures[feature] || false;
+        ignoreBox.addEventListener('change', e => {
+            ignoredFeatures[feature] = e.target.checked;
+            // Update wrapper class immediately for visual feedback (e.g., strikethrough).
+            updateFeatureRowClasses(feature, wrapper);
+        });
+
+        const ignoreLabel = document.createElement('label');
+        ignoreLabel.textContent = "Ignore";
+        ignoreLabel.htmlFor = ignoreBox.id;
+
+        // Append controls to the wrapper.
+        controls.appendChild(lockBox);
+        controls.appendChild(lockLabel);
+        controls.appendChild(ignoreBox);
+        controls.appendChild(ignoreLabel);
+        
+        wrapper.appendChild(controls);
+        section.appendChild(wrapper);
+    }
+
+    // --- Category-Specific Action Buttons ---
+    if (category !== "Prompt Generation") {
+        const actions = document.createElement('div');
+        actions.className = 'category-actions';
+
+        // Randomize Category Button
+        const categoryRandomBtn = document.createElement('button');
+        categoryRandomBtn.className = 'btn btn-primary';
+        categoryRandomBtn.innerHTML = '<i class="fas fa-dice"></i> Randomize ' + category;
+        categoryRandomBtn.addEventListener('click', () => {
+            let randomizedCount = 0;
+            for (let feature in group) {
+                // Only randomize features that are NOT locked.
+                if (!lockedFeatures[feature]) {
+                    const options = group[feature];
+                    const randomIndex = Math.floor(Math.random() * options.length);
+                    currentValues[feature] = options[randomIndex];
+                    
+                    const select = document.getElementById(feature);
+                    if (select) {
+                        // Special handling for randomized custom color
+                        if (feature.includes("Color") && currentValues[feature] === CUSTOM_COLOR_OPTION) {
+                            // If custom color is randomly picked, assign a random hex for completeness
+                            const randomHex = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                            currentValues[feature] = randomHex;
+                            select.value = CUSTOM_COLOR_OPTION; // Update select
+                            const colorPicker = document.getElementById(feature + "_colorPicker");
+                            if (colorPicker) colorPicker.value = randomHex; // Update picker
+                        } else {
+                            // Update select value for non-color or color name features.
+                            select.value = currentValues[feature];
+                            // If color feature, update picker visual based on name (optional)
+                            if (feature.includes("Color")) {
+                                const colorPicker = document.getElementById(feature + "_colorPicker");
+                                if (colorPicker) colorPicker.value = getBaseHex(currentValues[feature]);
+                            }
+                        }
+                    }
+                    randomizedCount++;
+                }
+            }
+            showToast(`Randomized ${randomizedCount} values in ${category} (excluding locked ones).`);
+        });
+        actions.appendChild(categoryRandomBtn);
+        
+        // Helper function for batch state update in the current category
+        const createBatchButton = (text, icon, stateKey, stateValue, message) => {
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-control';
+            btn.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+            btn.addEventListener('click', () => {
+                for (let feature in group) {
+                    if (stateKey === 'lockedFeatures') {
+                        lockedFeatures[feature] = stateValue;
+                    } else if (stateKey === 'ignoredFeatures') {
+                        ignoredFeatures[feature] = stateValue;
+                    }
+                    
+                    // Update UI elements in the rendered category
+                    const checkbox = document.getElementById(feature + (stateKey === 'lockedFeatures' ? "_lock" : "_ignore"));
                     const fRow = checkbox ? checkbox.closest('.feature-row') : null;
-                    if (checkbox) checkbox.checked = state;
-                    if (fRow) updateFeatureRowClasses(feature, fRow); 
-                } else if (type === 'ignore') {
-                    ignoredFeatures[feature] = state;
-                    const checkbox = document.getElementById(feature + "_ignore");
-                    const fRow = checkbox ? checkbox.closest('.feature-row') : null;
-                    if (checkbox) checkbox.checked = state;
+                    if (checkbox) checkbox.checked = stateValue;
                     if (fRow) updateFeatureRowClasses(feature, fRow);
                 }
+                showToast(message);
+            });
+            return btn;
+        };
+
+        // Create Lock/Unlock/Ignore/Unignore buttons using the helper function
+        actions.appendChild(createBatchButton('Lock All', 'fa-lock', 'lockedFeatures', true, `Locked all features in ${category}`));
+        actions.appendChild(createBatchButton('Unlock All', 'fa-unlock', 'lockedFeatures', false, `Unlocked all features in ${category}`));
+        actions.appendChild(createBatchButton('Ignore All', 'fa-eye-slash', 'ignoredFeatures', true, `Ignored all features in ${category}`));
+        actions.appendChild(createBatchButton('Unignore All', 'fa-eye', 'ignoredFeatures', false, `Unignored all features in ${category}`));
+        
+        section.appendChild(actions);
+    } 
+    // --- Global Controls and Prompt Generation Actions (Only in "Prompt Generation" Category) ---
+    else {
+        
+        /**
+         * @function updateGlobalState
+         * @description Iterates through ALL features across ALL categories and applies a global 
+         * lock/unlock or ignore/unignore state. Updates the state objects and the UI checkboxes 
+         * if they are currently rendered on the screen.
+         * @param {('lock'|'ignore')} type - The state type to modify.
+         * @param {boolean} state - The boolean value to set (true/false).
+         * @param {string} message - The toast message to display upon completion.
+         * @returns {void}
+         */
+        const updateGlobalState = (type, state, message) => {
+            const allGroup = features[currentGender];
+            for (let category in allGroup) {
+                for (let feature in allGroup[category]) {
+                    if (type === 'lock') {
+                        lockedFeatures[feature] = state;
+                        // Attempt to update the UI element if it is currently in the DOM.
+                        const checkbox = document.getElementById(feature + "_lock");
+                        const fRow = checkbox ? checkbox.closest('.feature-row') : null;
+                        if (checkbox) checkbox.checked = state;
+                        if (fRow) updateFeatureRowClasses(feature, fRow); 
+                    } else if (type === 'ignore') {
+                        ignoredFeatures[feature] = state;
+                        // Attempt to update the UI element if it is currently in the DOM.
+                        const checkbox = document.getElementById(feature + "_ignore");
+                        const fRow = checkbox ? checkbox.closest('.feature-row') : null;
+                        if (checkbox) checkbox.checked = state;
+                        if (fRow) updateFeatureRowClasses(feature, fRow);
+                    }
+                }
             }
-        }
-        showToast(message);
-    };
+            showToast(message);
+        };
 
-    const globalActions = document.createElement('div');
-    globalActions.className = 'global-actions';
-    
-    const h4 = document.createElement('h4');
-    h4.innerHTML = '<i class="fas fa-globe"></i> Global Feature Controls';
-    globalActions.appendChild(h4);
+        // --- Global Control Buttons ---
+        const globalActions = document.createElement('div');
+        globalActions.className = 'global-actions';
+        
+        const h4 = document.createElement('h4');
+        h4.innerHTML = '<i class="fas fa-globe"></i> Global Feature Controls';
+        globalActions.appendChild(h4);
 
-    const globalLockBtn = document.createElement('button');
-    globalLockBtn.className = 'btn btn-control';
-    globalLockBtn.innerHTML = '<i class="fas fa-lock"></i> Lock All';
-    globalLockBtn.addEventListener('click', () => updateGlobalState('lock', true, 'Globally locked all features.'));
+        // Global Lock/Unlock/Ignore/Unignore buttons (use the global state updater)
+        const globalLockBtn = document.createElement('button');
+        globalLockBtn.className = 'btn btn-control';
+        globalLockBtn.innerHTML = '<i class="fas fa-lock"></i> Lock All';
+        globalLockBtn.addEventListener('click', () => updateGlobalState('lock', true, 'Globally locked all features.'));
 
-    const globalUnlockBtn = document.createElement('button');
-    globalUnlockBtn.className = 'btn btn-control';
-    globalUnlockBtn.innerHTML = '<i class="fas fa-unlock"></i> Unlock All';
-    globalUnlockBtn.addEventListener('click', () => updateGlobalState('lock', false, 'Globally unlocked all features.'));
+        const globalUnlockBtn = document.createElement('button');
+        globalUnlockBtn.className = 'btn btn-control';
+        globalUnlockBtn.innerHTML = '<i class="fas fa-unlock"></i> Unlock All';
+        globalUnlockBtn.addEventListener('click', () => updateGlobalState('lock', false, 'Globally unlocked all features.'));
 
-    const globalIgnoreBtn = document.createElement('button');
-    globalIgnoreBtn.className = 'btn btn-control';
-    globalIgnoreBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Ignore All';
-    globalIgnoreBtn.addEventListener('click', () => updateGlobalState('ignore', true, 'Globally ignored all features.'));
+        const globalIgnoreBtn = document.createElement('button');
+        globalIgnoreBtn.className = 'btn btn-control';
+        globalIgnoreBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Ignore All';
+        globalIgnoreBtn.addEventListener('click', () => updateGlobalState('ignore', true, 'Globally ignored all features.'));
 
-    const globalUnignoreBtn = document.createElement('button');
-    globalUnignoreBtn.className = 'btn btn-control';
-    globalUnignoreBtn.innerHTML = '<i class="fas fa-eye"></i> Unignore All';
-    globalUnignoreBtn.addEventListener('click', () => updateGlobalState('ignore', false, 'Globally unignored all features.'));
+        const globalUnignoreBtn = document.createElement('button');
+        globalUnignoreBtn.className = 'btn btn-control';
+        globalUnignoreBtn.innerHTML = '<i class="fas fa-eye"></i> Unignore All';
+        globalUnignoreBtn.addEventListener('click', () => updateGlobalState('ignore', false, 'Globally unignored all features.'));
+        
+        const loadPresetBtn = document.createElement('button');
+        loadPresetBtn.className = 'btn btn-control';
+        loadPresetBtn.innerHTML = '<i class="fas fa-list-ul"></i> Load Preset from List';
+        loadPresetBtn.addEventListener('click', () => openPresetList()); // Assumes `openPresetList()` is defined globally
+        
+        globalActions.appendChild(globalLockBtn);
+        globalActions.appendChild(globalUnlockBtn);
+        globalActions.appendChild(globalIgnoreBtn);
+        globalActions.appendChild(globalUnignoreBtn);
+        globalActions.appendChild(loadPresetBtn);
+        section.appendChild(globalActions);
 
-    globalActions.appendChild(globalLockBtn);
-    globalActions.appendChild(globalUnlockBtn);
-    globalActions.appendChild(globalIgnoreBtn);
-    globalActions.appendChild(globalUnignoreBtn);
-    section.appendChild(globalActions);
+        // --- Prompt Generation and Utility Buttons ---
+        const otherActions = document.createElement('div');
+        otherActions.className = 'prompt-actions';
 
-    const otherActions = document.createElement('div');
-    otherActions.className = 'prompt-actions';
+        // Global Randomization Button
+        const randomBtn = document.createElement('button');
+        randomBtn.className = 'btn btn-primary';
+        randomBtn.innerHTML = '<i class="fas fa-dice"></i> Random Selection (All)';
+        randomBtn.addEventListener('click', () => {
+            const allGroup = features[currentGender];
+            let randomizedCount = 0;
+            // Iterate through all features globally
+            for (let category in allGroup) {
+                for (let feature in allGroup[category]) {
+                    // Only randomize unlocked features
+                    if (!lockedFeatures[feature]) {
+                        const options = allGroup[category][feature];
+                        const randomIndex = Math.floor(Math.random() * options.length);
+                        const selectedValue = options[randomIndex];
+                        
+                        // Handle color feature randomization (HEX code generation if CUSTOM_COLOR_OPTION is chosen)
+                        if (feature.includes("Color") && selectedValue === CUSTOM_COLOR_OPTION) {
+                            const randomHex = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+                            currentValues[feature] = randomHex;
+                            const colorPicker = document.getElementById(feature + "_colorPicker");
+                            if (colorPicker) colorPicker.value = randomHex;
+                        } else {
+                            currentValues[feature] = selectedValue;
+                            if (feature.includes("Color")) {
+                                const colorPicker = document.getElementById(feature + "_colorPicker");
+                                if (colorPicker) colorPicker.value = getBaseHex(selectedValue);
+                            }
+                        }
+                        
+                        // Update the corresponding select box in the UI if it is currently rendered
+                        const select = document.getElementById(feature);
+                        if (select) {
+                            // Set the select box value correctly (Custom Color option must be selected if a HEX is stored)
+                            select.value = feature.includes("Color") && isHexColor(currentValues[feature]) ? CUSTOM_COLOR_OPTION : currentValues[feature];
+                        }
+                        randomizedCount++;
+                    }
+                }
+            }
+            showToast(`Randomized ${randomizedCount} values (excluding locked ones).`);
+        });
 
-    const randomBtn = document.createElement('button');
-    randomBtn.className = 'btn btn-primary';
-    randomBtn.innerHTML = '<i class="fas fa-dice"></i> Random Selection (All)';
-    randomBtn.addEventListener('click', () => {
-      const allGroup = features[currentGender];
-      let randomizedCount = 0;
-      for (let category in allGroup) {
-        for (let feature in allGroup[category]) {
-          if (!lockedFeatures[feature]) {
-            const options = allGroup[category][feature];
-            const randomIndex = Math.floor(Math.random() * options.length);
-            const selectedValue = options[randomIndex];
-            
-            // Handle color feature randomization
-            if (feature.includes("Color") && selectedValue === CUSTOM_COLOR_OPTION) {
-                // If Custom Color is randomly selected, generate a random hex
-                const randomHex = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
-                currentValues[feature] = randomHex;
-                const colorPicker = document.getElementById(feature + "_colorPicker");
-                if (colorPicker) colorPicker.value = randomHex;
-            } else {
-                currentValues[feature] = selectedValue;
-                // If color feature, update picker visual based on name (optional)
-                if (feature.includes("Color")) {
-                    const colorPicker = document.getElementById(feature + "_colorPicker");
-                    if (colorPicker) colorPicker.value = getBaseHex(selectedValue);
+        // Generate Initial Prompt Button
+        const generateInitialBtn = document.createElement('button');
+        generateInitialBtn.className = 'btn btn-primary';
+        generateInitialBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Initial Prompt';
+        generateInitialBtn.addEventListener('click', () => {
+            let gender = currentValues["Gender"] || "Female";
+            let prompt = (gender === "Female") 
+                ? "Create an image of a woman standing on an absolute pure white background. "
+                : "Create an image of a man standing on an absolute pure white background. ";
+
+            const parts = [];
+            const allGroup = features[currentGender];
+            for (let category in allGroup) {
+                for (let feature in allGroup[category]) {
+                    if (feature === "Gender") continue;
+                    // Exclude features marked as ignored
+                    if (!ignoredFeatures[feature]) {
+                        const value = currentValues[feature];
+                        // The value in currentValues can be a name (e.g., 'Red') or a HEX code (e.g., '#ff0000').
+                        parts.push(`${feature}: ${value}`);
+                    }
                 }
             }
             
-            const select = document.getElementById(feature);
-            if (select) {
-                // Set the select box value correctly
-                select.value = feature.includes("Color") && isHexColor(currentValues[feature]) ? CUSTOM_COLOR_OPTION : currentValues[feature];
-            }
-            randomizedCount++;
-          }
-        }
-      }
-      showToast(`Randomized ${randomizedCount} values (excluding locked ones).`);
-    });
-
-    const generateInitialBtn = document.createElement('button');
-    generateInitialBtn.className = 'btn btn-primary';
-    generateInitialBtn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate Initial Prompt';
-    generateInitialBtn.addEventListener('click', () => {
-      let gender = currentValues["Gender"] || "Female";
-      
-      let prompt = (gender === "Female") 
-          ? "Create an image of a woman standing on an absolute pure white background. "
-          : "Create an image of a man standing on an absolute pure white background. ";
-
-      const parts = [];
-      const allGroup = features[currentGender];
-      for (let category in allGroup) {
-          for (let feature in allGroup[category]) {
-              if (feature === "Gender") continue;
-              if (!ignoredFeatures[feature]) {
-                const value = currentValues[feature];
-                // Use the stored value directly, which can be a color name or a hex code
-                parts.push(`${feature}: ${value}`);
-              }
-          }
-      }
-      
-      prompt += parts.join(", ") + ". High-resolution, professional studio lighting, 8k, photorealistic.";
-      document.getElementById('prompt').textContent = prompt;
-      showToast('Initial Prompt Generated');
-      updateCharCounter();
-    });
-
-    const generateModificationBtn = document.createElement('button');
-    generateModificationBtn.className = 'btn btn-primary';
-    generateModificationBtn.innerHTML = '<i class="fas fa-pen-to-square"></i> Generate Modification Prompt';
-    generateModificationBtn.addEventListener('click', () => {
-      const allFeaturesPrompt = [];
-      const allGroup = features[currentGender];
-      let hasContent = false;
-      let gender = currentValues["Gender"] || "Female";
-
-      for (let category in allGroup) {
-          for (let feature in allGroup[category]) {
-              if (feature === "Gender") continue;
-
-              if (ignoredFeatures[feature]) {
-                  continue;
-              }
-
-              hasContent = true;
-              
-              const value = currentValues[feature];
-              // Use the stored value directly, which can be a color name or a hex code
-              allFeaturesPrompt.push(`${feature}: ${value}`);
-          }
-      }
-
-      let prompt = "";
-      
-      if (!hasContent) {
-          prompt = (gender === "Female") 
-            ? "No features included in the prompt for the woman. All are either locked or ignored."
-            : "No features included in the prompt for the man. All are either locked or ignored.";
-      } else {
-        
-        prompt = (gender === "Female") 
-            ? "Change the image of the woman, set to: "
-            : "Change the image of the man, set to: ";
-        
-        prompt += allFeaturesPrompt.join(", ") + ".";
-
-      }
-      
-      document.getElementById('prompt').textContent = prompt.trim();
-      showToast('Modification Prompt Generated');
-      updateCharCounter();
-    });
-    
-    const copyPromptBtn = document.createElement('button');
-    copyPromptBtn.className = 'btn btn-secondary';
-    copyPromptBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Prompt';
-    copyPromptBtn.addEventListener('click', () => {
-      const promptText = document.getElementById('prompt').textContent;
-      if (promptText && promptText !== 'Generated Prompt will appear here...') {
-        navigator.clipboard.writeText(promptText).then(() => {
-          showToast('Prompt copied!');
-        }).catch(() => {
-          showToast('Failed to copy prompt.');
+            prompt += parts.join(", ") + ". High-resolution, professional studio lighting, 8k, photorealistic.";
+            document.getElementById('prompt').textContent = prompt;
+            showToast('Initial Prompt Generated');
+            updateCharCounter(); // Recalculate and display the character count
         });
-      } else {
-        showToast('No prompt to copy.');
-      }
-    });
 
-    const exportJsonBtn = document.createElement('button');
-    exportJsonBtn.className = 'btn btn-secondary';
-    exportJsonBtn.innerHTML = '<i class="fas fa-file-download"></i> Export JSON';
-    exportJsonBtn.addEventListener('click', () => {
-      const data = {
-        currentGender,
-        currentValues,
-        lockedFeatures,
-        ignoredFeatures
-      };
-      const json = JSON.stringify(data, null, 2);
-      const blob = new Blob([json], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
+        // Generate Modification Prompt Button
+        const generateModificationBtn = document.createElement('button');
+        generateModificationBtn.className = 'btn btn-primary';
+        generateModificationBtn.innerHTML = '<i class="fas fa-pen-to-square"></i> Generate Modification Prompt';
+        generateModificationBtn.addEventListener('click', () => {
+            const allFeaturesPrompt = [];
+            const allGroup = features[currentGender];
+            let hasContent = false;
+            let gender = currentValues["Gender"] || "Female";
 
-	  const genderValue = currentValues["Gender"] || currentGender;
-	  const skinValue = currentValues["Skin / Complexion"] || "UnspecifiedSkin"; 
-	  
-	  const cleanGender = genderValue.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
-	  const cleanSkin = skinValue.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
-	  
-	  const now = new Date();
-	  const dateString = now.getFullYear() + '-' + 
-	  				String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-	  				String(now.getDate()).padStart(2, '0');
-	  
-	  const newFilename = `${cleanGender}_${cleanSkin}_${dateString}.json`;
-	  
-	  a.download = newFilename;	  
+            for (let category in allGroup) {
+                for (let feature in allGroup[category]) {
+                    if (feature === "Gender") continue;
+                    // Only include features NOT marked as ignored
+                    if (ignoredFeatures[feature]) {
+                        continue;
+                    }
 
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Settings exported.');
-    });
+                    hasContent = true;
+                    
+                    const value = currentValues[feature];
+                    allFeaturesPrompt.push(`${feature}: ${value}`);
+                }
+            }
 
-    const importJsonBtn = document.createElement('button');
-    importJsonBtn.className = 'btn btn-secondary';
-    importJsonBtn.innerHTML = '<i class="fas fa-file-upload"></i> Import JSON';
-    importJsonBtn.addEventListener('click', () => {
-      document.getElementById('importJsonInput').click();
-    });
-    
-    otherActions.appendChild(randomBtn);
-    otherActions.appendChild(generateInitialBtn);
-    otherActions.appendChild(generateModificationBtn);
-    otherActions.appendChild(copyPromptBtn);
-    otherActions.appendChild(exportJsonBtn);
-    otherActions.appendChild(importJsonBtn);
-    
-    const importJsonInput = document.createElement('input');
-    importJsonInput.type = "file";
-    importJsonInput.id = "importJsonInput";
-    importJsonInput.accept = ".json";
-    importJsonInput.style.display = "none";
-    importJsonInput.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
+            let prompt = "";
+            
+            if (!hasContent) {
+                // Handle case where all features are ignored
+                prompt = (gender === "Female") 
+                    ? "No features included in the prompt for the woman. All are either locked or ignored."
+                    : "No features included in the prompt for the man. All are either locked or ignored.";
+            } else {
+                // Standard modification prompt format
+                prompt = (gender === "Female") 
+                    ? "Change the image of the woman, set to: "
+                    : "Change the image of the man, set to: ";
+                
+                prompt += allFeaturesPrompt.join(", ") + ".";
+            }
+            
+            document.getElementById('prompt').textContent = prompt.trim();
+            showToast('Modification Prompt Generated');
+            updateCharCounter(); // Recalculate and display the character count
+        });
+        
+        // Copy Prompt Button
+        const copyPromptBtn = document.createElement('button');
+        copyPromptBtn.className = 'btn btn-secondary';
+        copyPromptBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Prompt';
+        copyPromptBtn.addEventListener('click', () => {
+            const promptText = document.getElementById('prompt').textContent;
+            if (promptText && promptText !== 'Generated Prompt will appear here...') {
+                navigator.clipboard.writeText(promptText).then(() => {
+                    showToast('Prompt copied!');
+                }).catch(() => {
+                    showToast('Failed to copy prompt.');
+                });
+            } else {
+                showToast('No prompt to copy.');
+            }
+        });
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (data.currentGender) currentGender = data.currentGender.toLowerCase();
-          if (data.currentValues) currentValues = data.currentValues;
-          if (data.lockedFeatures) lockedFeatures = data.lockedFeatures;
-          if (data.ignoredFeatures) ignoredFeatures = data.ignoredFeatures;
-          initState(); 
-          renderFeatures();
-          showToast('Settings imported successfully.');
-        } catch (err) {
-          alert("Invalid JSON file.");
-        }
-      };
-      reader.readAsText(file);
-    });
-    otherActions.appendChild(importJsonInput);
+        // Export JSON Button
+        const exportJsonBtn = document.createElement('button');
+        exportJsonBtn.className = 'btn btn-secondary';
+        exportJsonBtn.innerHTML = '<i class="fas fa-file-download"></i> Export JSON';
+       exportJsonBtn.addEventListener('click', async () => {
+		  // ------------------------------------------------------------
+		  // 1  Prepare the data to export
+		  // ------------------------------------------------------------
+		  // These objects/variables should already exist in your app:
+		  // currentGender, currentValues, lockedFeatures, ignoredFeatures
+		  // We collect them into a single object to export as JSON.
+		  const data = {
+			currentGender,
+			currentValues,
+			lockedFeatures,
+			ignoredFeatures
+		  };
+
+		  // Convert the data object into a nicely formatted JSON string
+		  const json = JSON.stringify(data, null, 2);
+
+		  // ------------------------------------------------------------
+		  // 2  Generate a descriptive and clean filename
+		  // ------------------------------------------------------------
+		  // Try to extract the gender and skin values from currentValues
+		  // (falling back to defaults if not available)
+		  const genderValue = currentValues["Gender"] || currentGender;
+		  const skinValue = currentValues["Skin / Complexion"] || "UnspecifiedSkin";
+
+		  // Remove any non-alphanumeric characters and replace spaces with underscores
+		  const cleanGender = genderValue.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+		  const cleanSkin = skinValue.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+
+		  // Generate a simple YYYY-MM-DD date string for the filename
+		  const now = new Date();
+		  const dateString = now.getFullYear() + '-' +
+			String(now.getMonth() + 1).padStart(2, '0') + '-' +
+			String(now.getDate()).padStart(2, '0');
+
+		  // Combine all parts into a final filename
+		  const newFilename = `${cleanGender}_${cleanSkin}_${dateString}.json`;
+
+		  // ------------------------------------------------------------
+		  // 3  Try to use the modern File System Access API (if available)
+		  // ------------------------------------------------------------
+		  try {
+			if ('showSaveFilePicker' in window) {
+			  // ✅ Modern browsers (Chrome / Edge / Opera)
+			  // This will open a real "Save As" dialog allowing the user to choose
+			  // the file name and destination on their system.
+
+			  const fileHandle = await window.showSaveFilePicker({
+				suggestedName: newFilename, // Suggested filename in the dialog
+				types: [
+				  {
+					description: 'JSON Files',
+					accept: { 'application/json': ['.json'] },
+				  },
+				],
+			  });
+
+			  // Create a writable stream to the chosen file
+			  const writable = await fileHandle.createWritable();
+
+			  // Write the JSON string to the file
+			  await writable.write(json);
+
+			  // Close the writable stream (saves the file)
+			  await writable.close();
+
+			  // Show a small notification in the UI (your custom function)
+			  showToast('Settings exported successfully.');
+			} else {
+			  // ------------------------------------------------------------
+			  // 4  Fallback for browsers that do NOT support showSaveFilePicker()
+			  // ------------------------------------------------------------
+			  // In this case, we use the traditional download method by creating
+			  // a temporary <a> element and simulating a click event.
+
+			  const blob = new Blob([json], { type: "application/json" });
+			  const url = URL.createObjectURL(blob);
+
+			  const a = document.createElement("a");
+			  a.href = url;
+			  a.download = newFilename; // This suggests a filename to the browser
+			  a.click();
+
+			  // Release the blob URL from memory
+			  URL.revokeObjectURL(url);
+
+			  // Optional UI notification for fallback case
+			  showToast('Settings exported (auto-downloaded because Save As is not supported).');
+			}
+		  } catch (err) {
+			// ------------------------------------------------------------
+			// 5  Handle any errors (for example, if the user cancels the dialog)
+			// ------------------------------------------------------------
+			console.error('Save cancelled or failed:', err);
+		  }
+		});
 
 
-    const promptContainerDiv = document.createElement('div');
-    promptContainerDiv.id = 'prompt-container';
+        // Import JSON Button
+        const importJsonBtn = document.createElement('button');
+        importJsonBtn.className = 'btn btn-secondary';
+        importJsonBtn.innerHTML = '<i class="fas fa-file-upload"></i> Import JSON';
+        // Click handler triggers the hidden file input
+        importJsonBtn.addEventListener('click', () => {
+            document.getElementById('importJsonInput').click();
+        });
+        
+        // Append all action buttons
+        otherActions.appendChild(randomBtn);
+        otherActions.appendChild(generateInitialBtn);
+        otherActions.appendChild(generateModificationBtn);
+        otherActions.appendChild(copyPromptBtn);
+        otherActions.appendChild(exportJsonBtn);
+        otherActions.appendChild(importJsonBtn);
+        
+        // --- Hidden File Input for Import ---
+        const importJsonInput = document.createElement('input');
+        importJsonInput.type = "file";
+        importJsonInput.id = "importJsonInput";
+        importJsonInput.accept = ".json";
+        importJsonInput.style.display = "none";
+        importJsonInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
 
-    const promptDiv = document.createElement('div');
-    promptDiv.id = 'prompt';
-    promptDiv.textContent = 'Generated Prompt will appear here...';
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    // Update global state variables from imported data
+                    if (data.currentGender) currentGender = data.currentGender.toLowerCase();
+                    if (data.currentValues) currentValues = data.currentValues;
+                    if (data.lockedFeatures) lockedFeatures = data.lockedFeatures;
+                    if (data.ignoredFeatures) ignoredFeatures = data.ignoredFeatures;
+                    
+                    // Re-initialize state to validate imported values against current features
+                    initState(); 
+                    // Re-render the entire UI to reflect the new state
+                    renderFeatures();
+                    showToast('Settings imported successfully.');
+                } catch (err) {
+                    alert("Invalid JSON file.");
+                }
+            };
+            reader.readAsText(file);
+        });
+        otherActions.appendChild(importJsonInput);
 
-    const charCounterDiv = document.createElement('div');
-    charCounterDiv.id = 'char-counter';
-    charCounterDiv.textContent = 'Character Count: 37';
+        // --- Prompt Display and Character Counter ---
+        const promptContainerDiv = document.createElement('div');
+        promptContainerDiv.id = 'prompt-container';
 
-    promptContainerDiv.appendChild(promptDiv);
-    promptContainerDiv.appendChild(charCounterDiv);
+        const promptDiv = document.createElement('div');
+        promptDiv.id = 'prompt';
+        promptDiv.textContent = 'Generated Prompt will appear here...';
 
+        const charCounterDiv = document.createElement('div');
+        charCounterDiv.id = 'char-counter';
+        // Initial value is placeholder, will be updated by `updateCharCounter()`
+        charCounterDiv.textContent = 'Character Count: 37'; 
 
-    const dropZone = document.createElement('div');
-    dropZone.className = 'drop-zone';
-    dropZone.id = 'dropZone';
-    dropZone.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Drag and drop JSON file here or click to upload';
-    dropZone.addEventListener('click', () => importJsonBtn.click());
-    dropZone.addEventListener('dragover', e => {
-      e.preventDefault();
-      dropZone.classList.add('dragover');
-    });
-    dropZone.addEventListener('dragleave', () => {
-      dropZone.classList.remove('dragover');
-    });
-    dropZone.addEventListener('drop', e => {
-      e.preventDefault();
-      dropZone.classList.remove('dragover');
-      const file = e.dataTransfer.files[0];
-      if (file && file.type === 'application/json') {
-        const fileList = new DataTransfer();
-        fileList.items.add(file);
-        document.getElementById('importJsonInput').files = fileList.files;
-        document.getElementById('importJsonInput').dispatchEvent(new Event('change'));
-      } else {
-        showToast('Please drop a .json file.');
-      }
-    });
+        promptContainerDiv.appendChild(promptDiv);
+        promptContainerDiv.appendChild(charCounterDiv);
 
-    section.appendChild(otherActions);
-    section.appendChild(promptContainerDiv);
-    section.appendChild(dropZone);
-    
-    updateCharCounter();
-  }
+        // --- Drag and Drop Zone for JSON Import ---
+        const dropZone = document.createElement('div');
+        dropZone.className = 'drop-zone';
+        dropZone.id = 'dropZone';
+        dropZone.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> Drag and drop JSON file here or click to upload';
+        // Click event triggers the standard file upload
+        dropZone.addEventListener('click', () => importJsonBtn.click());
+        
+        // Drag events for visual feedback
+        dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+        
+        // Drop event handles the file reading process
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/json') {
+                // Use DataTransfer object to simulate file selection on the hidden input
+                const fileList = new DataTransfer();
+                fileList.items.add(file);
+                document.getElementById('importJsonInput').files = fileList.files;
+                // Dispatch change event to trigger the existing import logic
+                document.getElementById('importJsonInput').dispatchEvent(new Event('change'));
+            } else {
+                showToast('Please drop a .json file.');
+            }
+        });
 
-  featuresContainer.appendChild(section);
+        // Append final elements for the Prompt Generation category
+        section.appendChild(otherActions);
+        section.appendChild(promptContainerDiv);
+        section.appendChild(dropZone);
+        
+        // Ensure character counter is initialized/updated when this category loads
+        updateCharCounter();
+    }
+
+    // Append the completed section to the main features container.
+    featuresContainer.appendChild(section);
 }
 
+/**
+ * @fileoverview Main application entry point / Bootstrap sequence.
+ * This script runs once the DOM is fully loaded and executes the core
+ * functions necessary to initialize the application's state and render 
+ * the initial User Interface (UI).
+ */
+
+// --- APPLICATION BOOTSTRAP ---
+
+/**
+ * @function initState
+ * @description Calls the initialization function. This is the first critical step,
+ * responsible for:
+ * 1. Merging feature options based on the default or previously loaded `currentGender`.
+ * 2. Ensuring that every available feature has a valid value in `currentValues`.
+ * 3. Applying default values for new or previously invalid features.
+ * 4. Setting the initial state for `lockedFeatures` and `ignoredFeatures`.
+ * @see initState
+ */
 initState();
+
+/**
+ * @function renderFeatures
+ * @description Calls the main rendering function immediately after state initialization.
+ * This step translates the initialized state into the visible user interface elements by:
+ * 1. Rebuilding the Category Menu (sidebar).
+ * 2. Setting the correct active category button.
+ * 3. Calling `showCategory()` for the default category (`currentCategory`), 
+ * populating the feature selection controls and event listeners.
+ * @see renderFeatures
+ */
 renderFeatures();
+
+
+// --- NEW FUNCTIONS FOR PRESET POPUP AND JSON LOADING ---
+// ====================================================================
+
+/**
+ * @function closePresetList
+ * @description Hides the preset list modal/popup by setting its display CSS property to 'none'.
+ * This is typically triggered by a close button click or an external event.
+ * @returns {void}
+ */
+function closePresetList() {
+    // The ID 'listviewModal' is assumed to be the main container for the modal overlay.
+    const modal = document.getElementById('listviewModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+/**
+ * @function openPresetList
+ * @description Displays the preset selection modal. It includes a critical check to ensure 
+ * that dynamic content (the list of presets loaded from a data source) is only generated once.
+ * @returns {void}
+ */
+function openPresetList() {
+    // Check if the list generation function exists and if the dynamic content container is empty.
+    const dynamicContent = document.getElementById('presetsDynamicContent');
+    
+    // The condition prevents unnecessary re-rendering of the preset list on subsequent modal opens.
+    if (typeof loadPresetsFromJS === 'function' && dynamicContent && dynamicContent.innerHTML === '') {
+        /**
+         * The function `loadPresetsFromJS()` is assumed to:
+         * 1. Fetch JSON data (the presets list).
+         * 2. Dynamically generate and insert the preset list HTML into `#presetsDynamicContent`.
+         */
+        loadPresetsFromJS();
+    }
+    
+    // Display the modal
+    const modal = document.getElementById('listviewModal');
+    if (modal) {
+        modal.style.display = 'block';
+    } else {
+        // Log an error if the modal element cannot be found, aiding in debugging layout issues.
+        console.error("The 'listviewModal' element was not found.");
+        // Optional: showToast("Error: Preset modal not found.");
+    }
+}
+/**
+ * @function loadPresetsFromJS
+ * @description Dynamically loads preset configurations from the globally accessible `presetData` 
+ * object (assumed to be defined in an external script like data.js). It then generates the 
+ * interactive list structure (sections, thumbnails, names) within the list view modal.
+ * @assumes {Object} presetData - A global object containing category keys mapped to arrays of preset objects.
+ * @assumes {function} loadPresetData - An external function responsible for applying the selected 
+ * preset's JSON data to the application's global state (`currentValues`, etc.).
+ * @returns {void}
+ */
+function loadPresetsFromJS() {
+    // 1. Get the target container element where the list will be inserted.
+    const container = document.getElementById('presetsDynamicContent');
+    
+    // Safety check: Clear existing content to prevent duplicates if the function is called multiple times.
+    container.innerHTML = ''; 
+
+    // 2. Data Availability Check: Ensure 'presetData' global variable is loaded.
+    if (typeof presetData === 'undefined' || !presetData) {
+        // Display an error message if the data is missing.
+        container.innerHTML = '<p>Error: presetData (data.js) not loaded. Check the script tag placement and data definition.</p>';
+        return;
+    }
+
+    // 3. Iterate through each top-level category in the presetData object (e.g., 'hair', 'face').
+    for (const category in presetData) {
+        // Use hasOwnProperty to ensure we only process properties defined directly on the object.
+        if (Object.prototype.hasOwnProperty.call(presetData, category)) {
+            const presets = presetData[category]; // Array of presets for the current category.
+
+            // a. Create the main section container for the current category.
+            const section = document.createElement('div');
+            section.className = 'category-section'; 
+            
+            // b. Create the category heading (e.g., 'Hair', 'Face').
+            const h2 = document.createElement('h2');
+            // Capitalize the first letter of the category key for display purposes.
+            h2.textContent = category.charAt(0).toUpperCase() + category.slice(1); 
+            section.appendChild(h2);
+
+            // c. Create the unordered list (UL) to hold the individual preset items.
+            const ul = document.createElement('ul');
+            ul.className = 'preset-list';
+
+            // d. Iterate through each individual preset object within the current category array.
+            presets.forEach(preset => {
+                // i. Create the list item (LI) for the current preset.
+                const li = document.createElement('li');
+                li.className = 'preset-item';
+
+                // ii. Create and configure the image element (thumbnail).
+                const img = document.createElement('img');
+                img.src = preset.preset_image; 
+                img.alt = preset.preset_name; 
+                li.appendChild(img);
+                
+                // iii. Create the paragraph element for the preset name.
+                const name = document.createElement('p');
+                name.textContent = preset.preset_name;
+                li.appendChild(name);
+
+                // iv. Attach the click event handler to load and apply the preset data.
+                li.onclick = () => { 
+                    console.log(`Preset selected: ${preset.preset_name}. Applying embedded data.`);
+                    
+                    // 1. Data Application Check: Verify if the preset data object is embedded.
+                    if (preset.preset_json) {
+                        // Check if the external data application function is available.
+                        if (typeof loadPresetData === 'function') {
+                            // Call 'loadPresetData' with a deep copy of the embedded JSON data. 
+                            // Deep copy prevents mutation of the original source data.
+                            loadPresetData(JSON.parse(JSON.stringify(preset.preset_json))); 
+                            
+                            // 2. UI Action: Close the preset list modal after successful application.
+                            //closePresetList();
+                            
+                        } else {
+                            // Error case: The external function is missing.
+                            console.error("loadPresetData function is not defined. Ensure it's loaded in the parent HTML.");
+                            showToast("Internal error: data application failed.");
+                        }
+                    } else {
+                        // Error case: The 'preset_json' is missing in the preset object.
+                        showToast(`Error: Data not found for preset ${preset.preset_name}. Check data.js structure.`);
+                    }
+                };
+                
+                ul.appendChild(li); // Add the list item to the unordered list.
+            });
+
+            // e. Assemble the final structure: Add the list and section to the container.
+            section.appendChild(ul);
+            container.appendChild(section);
+        }
+    }
+}
+
+/**
+ * @function loadPresetData
+ * @description Called by the preset selection UI (e.g., listview modal or JSON import mechanism) 
+ * to transfer the preset's JSON data into the main application. It acts as an entry point 
+ * to validate and initiate the application process.
+ * @param {object} data - The preset's JSON object containing the application state.
+ * @returns {void}
+ */
+function loadPresetData(data) {
+    if (data) {
+        // If data is valid, proceed to the core application function.
+        applyPreset(data); 
+    } else {
+        // Display an error notification if the data object is null or undefined.
+        showToast("Error loading preset data from popup.");
+    }
+}
+
+
+/**
+ * @function applyPreset
+ * @description Core function that applies the preset data (currentValues, lockedFeatures, etc.)
+ * to the global state variables and completely refreshes the application's UI.
+ * @param {object} data - The preset's JSON object, containing the saved application state.
+ * @returns {void}
+ */
+function applyPreset(data) {
+    // 1. Data Validation Check: Ensure minimum required properties exist.
+    if (data.currentValues && data.currentGender) {
+        
+        // 2. Update Global Variables
+        // Gender is always stored in lowercase for consistency in indexing features.
+        currentGender = data.currentGender.toLowerCase();
+
+        // Use the spread operator (...) to perform a shallow merge of the preset data 
+        // onto the existing global state variables. This ensures any feature not present 
+        // in the preset retains its current value (if one exists).
+        currentValues = { ...currentValues, ...(data.currentValues || {})};
+        lockedFeatures = { ...lockedFeatures, ...(data.lockedFeatures || {})};
+        ignoredFeatures = { ...ignoredFeatures, ...(data.ignoredFeatures || {})};
+        
+        // 3. Re-initialize State
+        // This is crucial, especially if the Gender changed, as it validates the new 
+        // values against the newly available feature options for the selected gender.
+        initState(); 
+        
+        // 4. Update the UI
+        // Re-renders the entire feature panel and category sidebar based on the new state.
+        renderFeatures(); 
+        // Recalculate and update the prompt character count.
+        updateCharCounter();
+        
+        showToast(`Preset loaded for ${data.currentGender} successfully!`);
+    } else {
+        // Display an error if the preset data structure is invalid or incomplete.
+        showToast("Invalid preset data structure.");
+    }
+}
+
+
+
+
+
 </script>
+
+
+<div id="listviewModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);">
+    <div id="listviewContainer" style="
+        background-color: #fefefe; 
+        margin: 5% auto; 
+        padding: 20px; 
+        border: 1px solid #888; 
+        width: 90%; 
+        height: 80%;
+        max-height: 90%; 
+        border-radius: 10px; 
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        /* Flexbox for basic layout (header, content) */
+        display: flex;
+        flex-direction: column;
+    ">
+        
+        <div style="
+            display: flex; 
+            justify-content: space-between; /* Pushes items to the edges */
+            align-items: center; /* Aligns items vertically */
+            margin-bottom: 10px; /* Space below the header */
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee; /* Visual separator */
+        ">
+            <h1>Preset List</h1>
+            
+            <span class="close-button" onclick="closePresetList()" style="
+                color: #aaa; 
+                font-size: 28px; 
+                font-weight: bold; 
+                cursor: pointer;
+                /* Removing float: right as it's no longer needed */
+                float: none; 
+                margin-left: auto; /* Optional, for certainty */
+            ">&times;</span>
+        </div>
+        
+        <div id="presetsDynamicContent" style="
+            flex-grow: 1; /* Takes up the free space */
+            overflow-y: auto; /* Scrolling is applied only to this section */
+            /* Removing margin-top/border-top/padding-top as it exists in the header */
+            margin-bottom: 10px;
+        "></div>
+        
+    </div>
+</div>
+<style>
+    /* Move these styles for correct display */
+    .category-section { margin-bottom: 30px; background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .preset-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 20px; justify-content: flex-start; }
+    .preset-item { cursor: pointer; border: 1px solid #ddd; padding: 10px; border-radius: 6px; text-align: center; width: 100px; transition: transform 0.2s; }
+    .preset-item:hover { transform: scale(1.05); border-color: #5c67f2; }
+    .preset-item img { width: 100%; height: auto; border-radius: 4px; margin-bottom: 5px; }
+</style>
+
+
 </body>
 </html>

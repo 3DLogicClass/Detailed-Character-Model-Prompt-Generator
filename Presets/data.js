@@ -37,7 +37,7 @@ const presetData = {
 	{
       "preset_name": "Massy wave",
       "preset_image": "Presets/presets/Woman_hairs/Messy_waves.png",
-	  "preset_json": {"currentGender":"female","currentValues":{"Hair Style":"Messy waves","Hair Length":"Very long","Hair Color":"Blonde Balayage","Hair Texture":"Wavy","Hair Parting":"Side part","Hair Volume":"Voluminous","Hair Accessories":"None"},"lockedFeatures":{},"ignoredFeatures":{"Hair Style":false,"Hair Color":false,"Hair Length":false,"Hair Texture":false,"Hair Parting":false,"Hair Volume":false,"Hair Accessories":false}}
+	  "preset_json": {"currentGender":"female","currentValues":{"Hair Style":"Messy waves","Hair Length":"Medium","Hair Color":"Blonde Balayage","Hair Texture":"Wavy","Hair Parting":"Side part","Hair Volume":"Voluminous","Hair Accessories":"None"},"lockedFeatures":{},"ignoredFeatures":{"Hair Style":false,"Hair Color":false,"Hair Length":false,"Hair Texture":false,"Hair Parting":false,"Hair Volume":false,"Hair Accessories":false}}
 	},
 	{
 	  "preset_name": "Afro",
@@ -82,7 +82,7 @@ const presetData = {
 	{
 	  "preset_name": "Updo with Loose curls",
 	  "preset_image": "Presets/presets/Woman_hairs/Updo_Loose_curls.png",
-	  "preset_json": {"currentGender":"female","currentValues":{"Hair Style":"Updo","Hair Length":"Long","Hair Color":"Blonde Balayage","Hair Texture":"Loose curls","Hair Parting":"Off-center part","Hair Volume":"Voluminous","Hair Accessories":"None"},"lockedFeatures":{},"ignoredFeatures":{"Hair Style":false,"Hair Color":false,"Hair Length":false,"Hair Texture":false,"Hair Parting":false,"Hair Volume":false,"Hair Accessories":true}}
+	  "preset_json": {"currentGender":"female","currentValues":{"Hair Style":"Updo","Hair Length":"Medium","Hair Color":"Blonde Balayage","Hair Texture":"Loose curls","Hair Parting":"Off-center part","Hair Volume":"Voluminous","Hair Accessories":"None"},"lockedFeatures":{},"ignoredFeatures":{"Hair Style":false,"Hair Color":false,"Hair Length":false,"Hair Texture":false,"Hair Parting":false,"Hair Volume":false,"Hair Accessories":true}}
 	}	
   ],  
   "Female faces": [

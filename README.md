@@ -27,8 +27,8 @@ The code is written in simple HTML/CSS/JavaScript and can be run directly in you
 
 You can download the tool's code and files from the links below:
 
-* **📦 ZIP File** with Character Presets: **`[Insert Google Drive link here]`**
-* **💾 HTML Prompt Generator** (Single File): **`[Insert Google Drive link here]`**
+* **📦 ZIP File** with Character Presets: **`[https://drive.google.com/uc?export=download&id=1GIkHnj7H4k3GcIOrOshCVRa0y37-7Kou]`**
+* **💾 HTML Prompt Generator** (Single File): **`[https://drive.google.com/uc?export=download&id=1TND3XZlckMUok_YwcU1LafPkmXYdgh4e]`**
 
 ### Instructions
 
